@@ -2,6 +2,19 @@ local M = {}
 
 local api = vim.api
 
+local function write_table_to_buffer(buffer, table)
+	local output_str = vim.inspect(table)
+	local lines = vim.split(output_str, "\n")
+
+	vim.bo[buffer].modifiable = true
+
+	api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
+
+	vim.bo[buffer].modifiable = false
+
+	vim.bo[buffer].filetype = "lua"
+end
+
 M.create_floating_window = function(table)
 	local buffer = api.nvim_create_buf(false, true)
 
@@ -26,24 +39,11 @@ M.create_floating_window = function(table)
 
 	local window = api.nvim_open_win(buffer, true, opts)
 
-	Write_table_to_buffer(buffer, table)
+	write_table_to_buffer(buffer, table)
 
 	vim.keymap.set("n", "q", function()
 		api.nvim_win_close(window, false)
 	end, { buffer = buffer })
-end
-
-function Write_table_to_buffer(buffer, table)
-	local output_str = vim.inspect(table)
-	local lines = vim.split(output_str, "\n")
-
-	vim.bo[buffer].modifiable = true
-
-	api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
-
-	vim.bo[buffer].modifiable = false
-
-	vim.bo[buffer].filetype = "lua"
 end
 
 return M
