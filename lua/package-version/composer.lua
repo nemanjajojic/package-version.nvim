@@ -1,29 +1,42 @@
 local M = {}
 
+local window = require("package-version.window")
+local file = require("package-version.file")
+
+local composer_json = "composer.json"
+local composer_lock = "composer.lock"
+
+local require_key = "require"
+local require_dev_key = "require-dev"
+local packages_key = "packages"
+local packages_dev_key = "packages-dev"
+local version_key = "version"
+local package_name_key = "name"
+
 M.show_package_version = function()
-	if not Has_composer_json() then
-		vim.notify("No composer.json found in current project root", vim.log.levels.ERROR)
+	if not file.has_file(composer_json) then
+		vim.notify(composer_json .. " does not exist in current project root", vim.log.levels.ERROR)
 
 		return
 	end
 
-	local decoded_composer_lock_json = Get_decoded_json_file("composer.lock")
+	local decoded_composer_lock_json = file.get_decoded_json_file(composer_lock)
 
 	local required_mapping = {}
-	for _, required_package in pairs(decoded_composer_lock_json.packages) do
-		required_mapping[required_package.name] = required_package.version
+	for _, required_package in pairs(decoded_composer_lock_json[packages_key]) do
+		required_mapping[required_package[package_name_key]] = required_package[version_key]
 	end
 
 	local required_dev_mapping = {}
-	for _, dev_package in pairs(decoded_composer_lock_json["packages-dev"]) do
-		required_dev_mapping[dev_package.name] = dev_package.version
+	for _, dev_package in pairs(decoded_composer_lock_json[packages_dev_key]) do
+		required_dev_mapping[dev_package[package_name_key]] = dev_package[version_key]
 	end
 
-	local decoded_composer_json = Get_decoded_json_file("composer.json")
+	local decoded_composer_json = file.get_decoded_json_file(composer_json)
 
 	local required_packages_count = 0
 	local required_packages_mapping = {}
-	for package, _ in pairs(decoded_composer_json.require) do
+	for package, _ in pairs(decoded_composer_json[require_key]) do
 		if required_mapping[package] then
 			required_packages_mapping[package] = required_mapping[package]
 			required_packages_count = required_packages_count + 1
@@ -32,7 +45,7 @@ M.show_package_version = function()
 
 	local required_dev_count = 0
 	local required_dev_packages_mapping = {}
-	for package, _ in pairs(decoded_composer_json["require-dev"]) do
+	for package, _ in pairs(decoded_composer_json[require_dev_key]) do
 		if required_dev_mapping[package] then
 			required_dev_packages_mapping[package] = required_dev_mapping[package]
 			required_dev_count = required_dev_count + 1
@@ -48,74 +61,7 @@ M.show_package_version = function()
 	output_data["Required_Packages"] = required_packages_mapping
 	output_data["Required_Packages_Dev"] = required_dev_packages_mapping
 
-	Create_floating_window(output_data)
-end
-
-function Get_decoded_json_file(file_name)
-	local file_path = vim.fs.joinpath(vim.fn.getcwd(), file_name)
-	local file_handle = io.open(file_path, "r")
-
-	if not file_handle then
-		vim.notify("Could not open " .. file_name .. ". File might not exist.", vim.log.levels.ERROR)
-		return {}
-	end
-
-	local file_content = file_handle:read("*a")
-
-	file_handle:close()
-
-	return vim.json.decode(file_content)
-end
-
-function Has_composer_json()
-	local composer_path = vim.fs.joinpath(vim.fn.getcwd(), "composer.json")
-	local stat = (vim.uv or vim.loop).fs_stat(composer_path)
-
-	return stat ~= nil and stat.type == "file"
-end
-
-function Create_floating_window(table)
-	local buf = vim.api.nvim_create_buf(false, true)
-
-	local screen_width = vim.api.nvim_win_get_width(0)
-	local screen_height = vim.api.nvim_win_get_height(0)
-
-	local width = 80
-	local height = 20
-	local row = (screen_height - height) / 2
-	local col = (screen_width - width) / 2
-
-	local opts = {
-		relative = "editor",
-		row = row,
-		col = col,
-		width = width,
-		height = height,
-		border = "rounded",
-		style = "minimal",
-		focusable = true,
-	}
-
-	local win = vim.api.nvim_open_win(buf, true, opts)
-
-	Write_table_to_buffer(buf, table)
-
-	vim.keymap.set("n", "q", function()
-		vim.api.nvim_win_close(win, false)
-	end, { buffer = buf })
-end
-
-function Write_table_to_buffer(buffer, table)
-	local output_str = vim.inspect(table)
-	local lines = vim.split(output_str, "\n")
-
-	vim.bo[buffer].modifiable = true
-
-	vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
-
-	vim.bo[buffer].modifiable = false
-
-	vim.bo[buffer].filetype = "lua"
+	window.create_floating_window(output_data)
 end
 
 return M
