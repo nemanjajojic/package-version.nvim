@@ -1,15 +1,11 @@
 # 🔒 Package Version
 
----
-
 This plugin will help you to manage package version by showing installed version
 from `composer.lock` inside of `composer.json`.
 
 ![Package version](/images/package-version.gif)
 
 ## 📦 Installation
-
----
 
 Install plugin using package manager of your choice, for example with
 
@@ -40,8 +36,6 @@ Install plugin using package manager of your choice, for example with
 
 ## ⌨️ Mappings
 
----
-
 Default keybinding to show installed package version is `<leader>pv`. However,
 you can customize it to your liking in the installation section above.
 
@@ -50,8 +44,6 @@ you can customize it to your liking in the installation section above.
 > when `composer.json` is open in current buffer.
 
 ## 💡 Idea
-
----
 
 An idea is to simplify the workflow for developers who frequently work with
 PHP projects by providing immediate visibility of installed package versions directly
@@ -62,8 +54,6 @@ context switching between files.
 
 ## ✨ Next Steps
 
----
-
 Plan is to support more package managers in the future:
 
 - npm
@@ -71,12 +61,8 @@ Plan is to support more package managers in the future:
 
 ## 👨‍💻 Author
 
----
-
 [nemanjajojic](https://github.com/nemanjajojic)
 
 ## © License
-
----
 
 This software is released under the MIT License.
