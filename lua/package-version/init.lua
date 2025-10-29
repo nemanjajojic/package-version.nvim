@@ -7,24 +7,17 @@ local function register_which_keys()
 	which_key.add({
 		{
 			"<leader>p",
-			group = "Package Version",
+			group = "package lock version",
 			icon = {
-				icon = "󰙅",
+				icon = "",
 				color = "green",
 			},
 			vim.keymap.set("n", "<leader>pc", function()
-				composer.show_package_version_floaty_window()
-			end, {
-				noremap = true,
-				silent = true,
-				desc = "Composer",
-			}),
-			vim.keymap.set("n", "<leader>pv", function()
 				composer.show_package_version_virtual_text()
 			end, {
 				noremap = true,
 				silent = true,
-				desc = "Composer Virtual Line",
+				desc = "Composer",
 			}),
 		},
 	})
