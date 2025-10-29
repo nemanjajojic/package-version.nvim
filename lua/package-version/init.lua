@@ -17,7 +17,7 @@ local function register_which_keys()
 			end, {
 				noremap = true,
 				silent = true,
-				desc = "Composer",
+				desc = " Composer",
 			}),
 		},
 	})
