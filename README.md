@@ -36,7 +36,7 @@ Install plugin using package manager of your choice, for example with
 
 ## ⌨️ Mappings
 
-Default keybinding to show installed package version is `<leader>pv`. However,
+Default keybinding to show installed package version is `<leader>pc`. However,
 you can customize it to your liking in the installation section above.
 
 > [!IMPORTANT]  
@@ -69,4 +69,4 @@ Plan is to support more package managers in the future:
 
 ## © License
 
-This software is released under the MIT License.
+This software 
