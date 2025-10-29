@@ -52,6 +52,10 @@ within the `composer.json` file.
 Apart from enhancing productivity, this feature aims to reduce
 context switching between files.
 
+> [!NOTE]
+> This plugin draws inspiration from JetBrains PhpStorm IDE’s feature
+> that displays installed package versions when the `composer.json` file is open.
+
 ## ✨ Next Steps
 
 Plan is to support more package managers in the future:
