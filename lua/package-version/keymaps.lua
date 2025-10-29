@@ -12,7 +12,9 @@ M.register_which_keys = function()
 				icon = "",
 				color = "green",
 			},
-			vim.keymap.set("n", "<leader>pc", function() end, {
+			vim.keymap.set("n", "<leader>pc", function()
+				composer.show_package_version_virtual_text()
+			end, {
 				noremap = true,
 				silent = true,
 				desc = "Composer",
