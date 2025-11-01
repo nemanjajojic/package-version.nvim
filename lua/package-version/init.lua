@@ -1,8 +1,8 @@
 local M = {}
-local keymaps = require("package-version.keymaps")
+local command = require("package-version.command")
 
 function M.setup()
-	keymaps.register_which_keys()
+	command.composer_packge_version_command()
 end
 
 return M

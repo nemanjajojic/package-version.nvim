@@ -14,34 +14,39 @@ Install plugin using package manager of your choice, for example with
 ```lua
 {
     "nemanjajojic/package-version.nvim",
-     dependencies = {
-      "folke/which-key.nvim",
-    },
     config = function()
       require("package-version").setup()
     end,
     keys = {
-        -- Here you can set your preferred keybinding
-        {
+        -- Here you can set your preferred keybinding eg.
+        { 
             "<leader>C",
-            function()
-                require("package-version.composer").show_package_version_virtual_text()
-            end,
-            desc = "Show Composer Package Version",
+            ":ComposerPackageVersion<CR>",
+            mode = "n", 
+            desc = "Show installed composer package version" 
         },
+,
     }
 
 }
 ```
 
-## ⌨️ Mappings
+## 💻 Commands
 
-Default keybinding to show installed package version is `<leader>pv`. However,
-you can customize it to your liking in the installation section above.
+In order to execute command you have to type
+
+```vim
+:ComposerPackageVersion
+```
 
 > [!IMPORTANT]  
-> It's important to note that this keybinding is only active
+> It's important to note that this command can be executed only
 > when `composer.json` is open in current buffer.
+
+## ⌨️ Mappings
+
+Plugin do not have any default mapping configured for command.
+You can choose your own keybinding.
 
 ## 💡 Idea
 
@@ -52,7 +57,7 @@ within the `composer.json` file.
 Apart from enhancing productivity, this feature aims to reduce
 context switching between files.
 
-> [!NOTE]
+> [!NOTE] :W
 > This plugin draws inspiration from JetBrains PhpStorm IDE’s feature
 > that displays installed package versions when the `composer.json` file is open.
 

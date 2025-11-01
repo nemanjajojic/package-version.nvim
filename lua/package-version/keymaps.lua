@@ -1,4 +1,5 @@
 local M = {}
+
 local composer = require("package-version.composer")
 
 M.register_which_keys = function()
