@@ -25,7 +25,6 @@ Install plugin using package manager of your choice, for example with
             mode = "n", 
             desc = "Show installed composer package version" 
         },
-,
     }
 
 }
@@ -57,7 +56,7 @@ within the `composer.json` file.
 Apart from enhancing productivity, this feature aims to reduce
 context switching between files.
 
-> [!NOTE] :W
+> [!NOTE]
 > This plugin draws inspiration from JetBrains PhpStorm IDE’s feature
 > that displays installed package versions when the `composer.json` file is open.
 
