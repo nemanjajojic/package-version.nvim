@@ -1,17 +1,5 @@
 # 🔒 Package Version
 
-<!--toc:start-->
-- [🔒 Package Version](#🔒-package-version)
-  - [📦 Installation](#📦-installation)
-    - [lazy.nvim](#lazy.nvim)
-  - [💻 Commands](#💻-commands)
-    - [Composer](#composer)
-    - [NPM](#npm)
-  - [⌨️ Mappings](#️-mappings)
-  - [✨ Next Steps](#next-steps)
-  - [👨‍💻 Author](#👨‍💻-author)
-  - [© License](#license)
-<!--toc:end-->
 This plugin will provide a better visibility of installed packages
 without leaving main package file eg. `composer.json`, `package.json` etc...
 
