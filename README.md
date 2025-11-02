@@ -1,7 +1,23 @@
 # 🔒 Package Version
 
-This plugin will help you to manage package version by showing installed version
-from `composer.lock` inside of `composer.json`.
+<!--toc:start-->
+- [🔒 Package Version](#🔒-package-version)
+  - [📦 Installation](#📦-installation)
+    - [lazy.nvim](#lazy.nvim)
+  - [💻 Commands](#💻-commands)
+    - [Composer](#composer)
+    - [NPM](#npm)
+  - [⌨️ Mappings](#️-mappings)
+  - [✨ Next Steps](#next-steps)
+  - [👨‍💻 Author](#👨‍💻-author)
+  - [© License](#license)
+<!--toc:end-->
+This plugin will provide a better visibility of installed packages
+without leaving main package file eg. `composer.json`, `package.json` etc...
+
+An idea is to simplify the workflow and to reduce context switching
+for developers who frequently manage packages by providing immediate visibility
+of installed package version directly within the main package file.
 
 ![Package version](/images/package-version.gif)
 
@@ -14,57 +30,78 @@ Install plugin using package manager of your choice, for example with
 ```lua
 {
     "nemanjajojic/package-version.nvim",
+    dependencies = { "folke/which-key.nvim" }, --- this is an optional dependency
     config = function()
       require("package-version").setup()
-    end,
-    keys = {
-        -- Here you can set your preferred keybinding eg.
-        { 
-            "<leader>C",
-            ":ComposerPackageVersion<CR>",
-            mode = "n", 
-            desc = "Show installed composer package version" 
-        },
-    }
-
+    end
 }
 ```
 
 ## 💻 Commands
 
-In order to execute command you have to type
+You have two commands available:
+
+### Composer
 
 ```vim
-:ComposerPackageVersion
+:ComposerPackageVersionToggle
+```
+
+### NPM
+
+```vim
+:NpmPackageVersionToggle
+
 ```
 
 > [!IMPORTANT]  
 > It's important to note that this command can be executed only
-> when `composer.json` is open in current buffer.
+> within dedicated file.
+> For Composer inside `composer.json`, and for NPM inside `package.json`
 
 ## ⌨️ Mappings
 
-Plugin do not have any default mapping configured for command.
-You can choose your own keybinding.
+If you already using `which-key`,` you can use default keybinding
+provided by plugin.
 
-## 💡 Idea
+- `<leader>vc` - for Composer
+- `<leader>vn` - for NPM
 
-An idea is to simplify the workflow for developers who frequently work with
-PHP projects by providing immediate visibility of installed package versions directly
-within the `composer.json` file.
-
-Apart from enhancing productivity, this feature aims to reduce
-context switching between files.
-
-> [!NOTE]
-> This plugin draws inspiration from JetBrains PhpStorm IDE’s feature
-> that displays installed package versions when the `composer.json` file is open.
+> ![IMPORTANT]
+> If you are not using `which-key`, you can set keybindings to your preference eg.
+>
+> ```lua
+> {
+>    "nemanjajojic/package-version.nvim",
+>    dependencies = { "folke/which-key.nvim" }, --- this is an optional dependency
+>    cmd = { "ComposerPackageVersionToggle", "NpmPackageVersionToggole" },
+>    config = function()
+>      require("package-version").setup()
+>    end,
+>    keys = {
+>        -- Here you can set your preferred keybinding eg.
+>        { 
+>            "<leader>ComposerToggleKey",
+>            "<cmd>ComposerPackageVersionToggle<cr>",
+>            mode = "n", 
+>            desc = "Toggle installed composer package version" 
+>        },
+>        { 
+>            "<leader>NpmToggleKey",
+>            "<cmd>NpmPackageVersionToggle<cr>",
+>            mode = "n", 
+>            desc = "Toggle installed NPM package version" 
+>        },
+>    }
+>}
+>```
 
 ## ✨ Next Steps
 
 Plan is to support more package managers in the future:
 
-- npm
+- Composer ✅
+- npm ✅
 - pip
 
 ## 👨‍💻 Author
