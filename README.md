@@ -55,7 +55,7 @@ provided by plugin.
 - `<leader>vc` - for Composer
 - `<leader>vn` - for NPM
 
-> ![IMPORTANT]
+> [!IMPORTANT]
 > If you are not using `which-key`, you can set keybindings to your preference eg.
 >
 > ```lua
