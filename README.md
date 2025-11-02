@@ -90,6 +90,7 @@ Plan is to support more package managers in the future:
 
 - Composer ✅
 - npm ✅
+- yarn v1
 - pip
 
 ## 👨‍💻 Author
