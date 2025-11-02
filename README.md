@@ -61,7 +61,6 @@ provided by plugin.
 > ```lua
 > {
 >    "nemanjajojic/package-version.nvim",
->    dependencies = { "folke/which-key.nvim" }, --- this is an optional dependency
 >    cmd = { "ComposerPackageVersionToggle", "NpmPackageVersionToggole" },
 >    config = function()
 >      require("package-version").setup()
