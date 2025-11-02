@@ -49,7 +49,7 @@ You have two commands available:
 
 ## ⌨️ Mappings
 
-If you already using `which-key`,` you can use default keybinding
+If you already using `which-key`, you can use default keybinding
 provided by plugin.
 
 - `<leader>vc` - for Composer
