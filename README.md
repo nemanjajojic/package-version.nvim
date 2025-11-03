@@ -1,7 +1,9 @@
 # 🔒 Package Version
 
-![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)
-![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)
+[![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)]((http://www.lua.org))
+[![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)]((https://neovim.io))
+[![Composer](https://img.shields.io/badge/Composer-%232E7EEA.svg?style=for-the-badge&logo=composer&logoColor=white)](https://getcomposer.org/)
+[![NPM](https://img.shields.io/badge/NPM-%23CB3837.svg?style=for-the-badge&logo=npm&logoColor=white)](https://www.npmjs.com/)
 
 This plugin will provide a better visibility of installed packages
 without leaving main package file eg. `composer.json`, `package.json` etc...
