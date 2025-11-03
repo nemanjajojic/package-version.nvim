@@ -4,5 +4,5 @@
 - [x] NPM
 - [ ] yarn v1
 - [ ] yarn v2
-- [ ] pip
+- [ ] PyPi
 - [ ] 🚀 release v1.0
