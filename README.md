@@ -1,7 +1,7 @@
 # 🔒 Package Version
 
-:![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](<http://www.lua.org>)
-[![Neovim](https://img.shields.io/badge/Neovim%200.5+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+:![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)]
+![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)
 
 This plugin will provide a better visibility of installed packages
 without leaving main package file eg. `composer.json`, `package.json` etc...
