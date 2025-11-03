@@ -1,5 +1,8 @@
 # 🔒 Package Version
 
+:![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](<http://www.lua.org>)
+[![Neovim](https://img.shields.io/badge/Neovim%200.5+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+
 This plugin will provide a better visibility of installed packages
 without leaving main package file eg. `composer.json`, `package.json` etc...
 
@@ -85,17 +88,4 @@ provided by plugin.
 
 ## ✨ Next Steps
 
-Plan is to support more package managers in the future:
-
-- Composer ✅
-- npm ✅
-- yarn v1
-- pip
-
-## 👨‍💻 Author
-
-[nemanjajojic](https://github.com/nemanjajojic)
-
-## © License
-
-This software is released under the MIT License.
+Go checkout [TODO.md](TODO.md)
