@@ -3,6 +3,7 @@ local M = {}
 local file = require("package-version.file")
 local virtual_text = require("package-version.virtual-text")
 
+---@return table<string, string>
 local function get_all_packages()
 	local all_packages = {}
 	local decoded_package_lock_json = file.get_decoded_json_file("package-lock.json")
@@ -19,8 +20,9 @@ local function get_all_packages()
 	return all_packages
 end
 
-M.toggle_package_version_virtual_text = function()
-	virtual_text.toggle_package_version_virtual_text(get_all_packages(), "package.json", "NPM")
+---@param config? PackageVersionConfig
+M.toggle_package_version_virtual_text = function(config)
+	virtual_text.toggle_package_version_virtual_text(get_all_packages(), "package.json", "NPM", config)
 end
 
 return M

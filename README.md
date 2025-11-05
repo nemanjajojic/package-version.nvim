@@ -66,7 +66,7 @@ provided by plugin.
 > ```lua
 > {
 >    "nemanjajojic/package-version.nvim",
->    cmd = { "ComposerPackageVersionToggle", "NpmPackageVersionToggole" },
+>    cmd = { "ComposerPackageVersionToggle", "NpmPackageVersionToggle" },
 >    config = function()
 >      require("package-version").setup()
 >    end,
@@ -87,6 +87,21 @@ provided by plugin.
 >    }
 >}
 >```
+
+## 🛠️ Configuration
+
+You don’t have to change anything, but if you want to,
+you can customize it to your liking.
+
+```lua
+config = function()
+    require("package-version").setup({
+        color = 'your color', --- default is 'Comment'
+        icon = 'your icon', --- default is ''
+    })
+end
+
+```
 
 ## ✨ Next Steps
 

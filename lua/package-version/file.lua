@@ -1,9 +1,13 @@
 local M = {}
 
+---@param file_name string
+---@return string
 local function get_file_path(file_name)
 	return vim.fs.joinpath(vim.fn.getcwd(), file_name)
 end
 
+---@param file_name string
+---@return table<string, any>?
 M.get_decoded_json_file = function(file_name)
 	local file_handle = io.open(get_file_path(file_name), "r")
 
@@ -20,12 +24,16 @@ M.get_decoded_json_file = function(file_name)
 	return vim.json.decode(file_content)
 end
 
+---@param file_name string
+---@return boolean
 M.has_file = function(file_name)
 	local stat = (vim.uv or vim.loop).fs_stat(get_file_path(file_name))
 
 	return stat ~= nil and stat.type == "file"
 end
 
+---@param package_name string
+---@return integer?
 M.does_buffer_contain_string = function(package_name)
 	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 

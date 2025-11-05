@@ -3,31 +3,42 @@ local M = {}
 local composer = require("package-version.composer")
 local npm = require("package-version.npm")
 
-M.register_which_keys = function()
+---@param config? PackageVersionConfig
+M.register_which_keys = function(config)
 	local which_key = require("which-key")
 
 	which_key.add({
 		{
 			"<leader>v",
-			group = "package lock version",
+			group = "package version",
 			icon = {
 				icon = "",
 				color = "green",
 			},
-			vim.keymap.set("n", "<leader>vc", function()
-				composer.toggle_package_version_virtual_text()
-			end, {
-				noremap = true,
-				silent = true,
-				desc = "Composer",
-			}),
-			vim.keymap.set("n", "<leader>vn", function()
-				npm.toggle_package_version_virtual_text()
-			end, {
-				noremap = true,
-				silent = true,
-				desc = "NPM",
-			}),
+		},
+		{
+			"<leader>vc",
+			group = "Composer",
+			icon = {
+				icon = "",
+				color = "yellow",
+			},
+			function()
+				composer.toggle_package_version_virtual_text(config)
+			end,
+			desc = "Current",
+		},
+		{
+			"<leader>vn",
+			group = "NPM",
+			icon = {
+				icon = "",
+				color = "red",
+			},
+			function()
+				npm.toggle_package_version_virtual_text(config)
+			end,
+			desc = "Current",
 		},
 	})
 end

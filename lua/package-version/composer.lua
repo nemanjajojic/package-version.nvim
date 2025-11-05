@@ -3,7 +3,8 @@ local M = {}
 local file = require("package-version.file")
 local virtual_text = require("package-version.virtual-text")
 
-local function get_all_packages()
+---@return table<string, string>
+local get_all_packages = function()
 	local version_key = "version"
 	local package_name_key = "name"
 
@@ -25,8 +26,9 @@ local function get_all_packages()
 	return all_packages
 end
 
-M.toggle_package_version_virtual_text = function()
-	virtual_text.toggle_package_version_virtual_text(get_all_packages(), "composer.json", "Composer")
+---@param config? PackageVersionConfig
+M.toggle_package_version_virtual_text = function(config)
+	virtual_text.toggle_package_version_virtual_text(get_all_packages(), "composer.json", "Composer", config)
 end
 
 return M
