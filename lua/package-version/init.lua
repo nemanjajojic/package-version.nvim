@@ -2,10 +2,6 @@ local M = {}
 local command = require("package-version.command")
 local which_key_keymaps = require("package-version.which-key-keymaps")
 
----@class PackageVersionConfig
----@field color? string
----@field icon? string
-
 ---@param config? PackageVersionConfig
 function M.setup(config)
 	local success, whichkey = pcall(require, "which-key")
