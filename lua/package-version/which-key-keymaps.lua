@@ -1,7 +1,6 @@
 local M = {}
 
-local composer = require("package-version.composer")
-local npm = require("package-version.npm")
+local strategy = require("package-version.package-manager.strategy")
 
 ---@param config? PackageVersionConfig
 M.register_which_keys = function(config)
@@ -12,33 +11,33 @@ M.register_which_keys = function(config)
 			"<leader>v",
 			group = "package version",
 			icon = {
-				icon = "",
+				icon = "󰏖 ",
 				color = "green",
 			},
 		},
 		{
-			"<leader>vc",
-			group = "Composer",
+			"<leader>vi",
+			group = "Installed",
 			icon = {
-				icon = "",
-				color = "yellow",
+				icon = "󰏖 ",
+				color = "green",
 			},
 			function()
-				composer.toggle_package_version_virtual_text(config)
+				strategy.installed(config)
 			end,
-			desc = "Current",
+			desc = "Toggle installed package versions from lock file",
 		},
 		{
-			"<leader>vn",
-			group = "NPM",
+			"<leader>vo",
+			group = "Outdated",
 			icon = {
-				icon = "",
-				color = "red",
+				icon = "󰏖 ",
+				color = "green",
 			},
 			function()
-				npm.toggle_package_version_virtual_text(config)
+				strategy.outdated(config)
 			end,
-			desc = "Current",
+			desc = "Toggle outdated package versions",
 		},
 	})
 end

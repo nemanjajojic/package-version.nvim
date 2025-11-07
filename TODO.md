@@ -1,8 +1,10 @@
 # TODO
 
-- [x] Composer - [v0.1.0](https://github.com/nemanjajojic/package-version.nvim/releases/tag/v0.1.0)
-- [x] NPM - [v0.2.0](https://github.com/nemanjajojic/package-version.nvim/releases/tag/v0.2.0)
-- [ ] yarn v1
-- [ ] yarn v2
-- [ ] PyPi
+- [x] Support Composer
+- [x] Support NPM
+- [x] Create async job for commands
+- [x] Add more spinner styles
+- [x] Create strategy and adapter in order to add more package managers
+- [x] Support docker environment with fallback to local
+- [ ] Support Yarn
 - [ ] 🚀 release v1.0
