@@ -1,3 +1,0 @@
----@class PackageVersionConfig
----@field color? string
----@field icon? string

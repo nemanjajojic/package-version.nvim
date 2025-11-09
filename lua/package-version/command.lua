@@ -1,7 +1,6 @@
 local M = {}
 
-local composer = require("package-version.composer")
-local npm = require("package-version.npm")
+local strategy = require("package-version.package-manager.strategy")
 
 ---@param name string
 ---@param callback function
@@ -16,13 +15,13 @@ end
 
 ---@param config? PackageVersionConfig
 M.register_commands = function(config)
-	create_command("ComposerPackageVersionToggle", function()
-		composer.toggle_package_version_virtual_text(config)
-	end, "Toggle instaled version of package via composer")
+	create_command("PackageVersionInstalled", function()
+		strategy.installed(config)
+	end, "Toggle instaled package version")
 
-	create_command("NpmPackageVersionToggle", function()
-		npm.toggle_package_version_virtual_text(config)
-	end, "Toglge instaled version of package via NPM")
+	create_command("PackageVersionOutdated", function()
+		strategy.outdated(config)
+	end, "Toglge outdated package version")
 end
 
 return M

@@ -1,0 +1,24 @@
+---@class PackageVersionConfig
+---@field color? ColorConfig
+---@field spinner? SpinnerConfig
+---@field docker? DockerConfig
+---
+---@class ColorConfig
+---@field minor? string
+---@field major? string
+---@field up_to_date? string
+---@field current? string
+---@field abandoned? string
+---
+---@class SpinnerConfig
+---@field relative? string
+---@field type? "pacman" | "ball" | "space" | "minimal" | "dino"
+---@field style? string
+---@field width? integer
+---@field height? integer
+---@field column? integer
+---@field row? integer
+---
+---@class DockerConfig
+---@field composer_container_name? string
+---@field npm_container_name? string
