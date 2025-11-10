@@ -107,7 +107,7 @@ end
 ## Color options
 
 In order to align plugin with color scheme of your choice,
-you should should customize this config accoding to your preferences.
+you should should customize this config according to your preferences.
 
 > [!NOTE]
 > You can use hexadecimal color codes eg. `#FF5733`
@@ -126,27 +126,7 @@ to provide better user experience, while background task is running.
 > [!NOTE]
 > `space` is default spinner type.
 
-You have couple of options to choose from:
-
-#### Space
-
-![Space spinner](/images/space.gif)
-
-#### Minimal
-
-![Minimal spinner](/images/minimal.gif)
-
-#### Ball
-
-![Ball spinner](/images/ball.gif)
-
-#### Pacman
-
-![Pacman spinner](/images/pacman.gif)
-
-#### Dino
-
-![Dino spinner](/images/dino.gif)
+You have couple of options to choose from. Please check [SPINNERS.md](SPINNERS.md)
 
 ### Docker and local environment
 
@@ -169,6 +149,15 @@ In case you wanna use local installation of package manager,
 > [!IMPORTANT]
 > All package managers must be installed and available in your system `PATH`.
 
+## 🙏 Honorable Mentions
+
+- [Nerd Fonts](https://www.nerdfonts.com/) -  for providing awesome icons
+- [jellydn](https://github.com/jellydn/spinner.nvim) - for providing base spinner functionality
+
 ## ✨ Next Steps
 
 Go checkout [TODO.md](TODO.md)
+
+## ⭐️ Support
+
+If you find this plugin helpful, please consider giving it a star

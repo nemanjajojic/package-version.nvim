@@ -5,6 +5,8 @@
 - [x] Create async job for commands
 - [x] Add more spinner styles
 - [x] Create strategy and adapter in order to add more package managers
-- [x] Support docker environment with fallback to local
-- [ ] Support Yarn
+- [x] Support docker and local environments
+- [ ] Support yarn
+- [ ] Support pNpm
+- [ ] Support PyPi
 - [ ] 🚀 release v1.0
