@@ -2,11 +2,13 @@ local M = {}
 
 local composer = require("package-version.package-manager.composer")
 local npm = require("package-version.package-manager.npm")
+local yarn = require("package-version.package-manager.yarn")
 local logger = require("package-version.utils.logger")
 
 local compose_json_file_name = "composer.json"
 local package_json_file_name = "package.json"
 local npm_lock_file_name = "package-lock.json"
+local yarn_lock_file_name = "yarn.lock"
 
 local log_no_supported_file = function()
 	logger.error(
@@ -39,13 +41,24 @@ M.installed = function(package_config)
 	end
 
 	if current_file_name == package_json_file_name then
-		if not has_file(npm_lock_file_name) then
-			log_only_npm_is_supported()
+		if has_file(yarn_lock_file_name) and has_file(npm_lock_file_name) then
+			logger.error(
+				"Both yarn.lock and package-lock.json files are present. Please keep only one to avoid conflicts."
+			)
+			return
+		end
+
+		if has_file(yarn_lock_file_name) then
+			yarn.installed(package_config)
 
 			return
 		end
 
-		npm.installed(package_config)
+		if has_file(npm_lock_file_name) then
+			npm.installed(package_config)
+
+			return
+		end
 
 		return
 	end
@@ -64,13 +77,24 @@ M.outdated = function(package_config)
 	end
 
 	if current_file_name == package_json_file_name then
-		if not has_file(npm_lock_file_name) then
-			log_only_npm_is_supported()
+		if has_file(yarn_lock_file_name) and has_file(npm_lock_file_name) then
+			logger.error(
+				"Both yarn.lock and package-lock.json files are present. Please keep only one to avoid conflicts."
+			)
+			return
+		end
+
+		if has_file(yarn_lock_file_name) then
+			yarn.outdated(package_config)
 
 			return
 		end
 
-		npm.outdated(package_config)
+		if has_file(npm_lock_file_name) then
+			npm.outdated(package_config)
+
+			return
+		end
 
 		return
 	end

@@ -17,5 +17,3 @@
 #### Dino
 
 ![Dino spinner](/images/dino.gif)
-
-

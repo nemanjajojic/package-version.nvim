@@ -2,13 +2,19 @@
 
 [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)]((http://www.lua.org))
 [![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)]((https://neovim.io))
+
+## Supported Package Managers
+
 [![Composer](https://img.shields.io/badge/Composer-%232E7EEA.svg?style=for-the-badge&logo=composer&logoColor=white)](https://getcomposer.org/)
 [![NPM](https://img.shields.io/badge/NPM-%23CB3837.svg?style=for-the-badge&logo=npm&logoColor=white)](https://www.npmjs.com/)
+![Yarn](https://img.shields.io/badge/yarn-%232C8EBB.svg?style=for-the-badge&logo=yarn&logoColor=white)
 
-An idea of this plugin is to simplify the workflow and to reduce context switching
-for developers who frequently manage packages by providing immediate visibility
-of installed(current) and outdated and abandoned packages
-directly within the main package file.
+## The Problem
+
+Imagine this: you’re in Neovim, and you want to keep an eye on your
+installed, outdated, and abandoned packages without having to leave the
+editor in a single keystroke. Well, now you can! With this plugin,
+you can toggle package versions right inside your main package manager file.
 
 ![Package version](/images/package-version.gif)
 
@@ -27,11 +33,6 @@ Install plugin using package manager of your choice, for example with
     end
 }
 ```
-
-Plugin supports following package managers:
-
-- Composer
-- NPM
 
 ## 💻 Commands
 
@@ -98,6 +99,7 @@ config = function()
         docker = {
             composer_container_name = "your_composer_container_name",
             npm_container_name = "your_npm_container_name",
+            yarn_container_name = "your_yarn_container_name",
         }
     })
 end
@@ -140,6 +142,7 @@ you have to set proper container name for each package manager.
 
 - `composer_container_name` - in case you wanna use composer
 - `npm_container_name` - in case you wanna use npm
+- `yarn_container_name` - in case you wanna use yarn
 
 #### Local
 

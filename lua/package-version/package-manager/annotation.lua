@@ -22,3 +22,4 @@
 ---@class DockerConfig
 ---@field composer_container_name? string
 ---@field npm_container_name? string
+---@field yarn_container_name? string
