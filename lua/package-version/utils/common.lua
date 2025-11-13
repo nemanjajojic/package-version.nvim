@@ -1,10 +1,8 @@
-local logger = require("package-version.utils.logger")
 local M = {
 	---@type ColorConfig
 	color_config = {
-		major = "#eba0ac",
-		minor = "#f9e2af",
-		up_to_date = "#a6e3a1",
+		latest = "#a6e3a1",
+		wanted = "#f9e2af",
 		current = "Comment",
 		abandoned = "#eba0ac",
 	},
@@ -21,35 +19,29 @@ M.abandoned_hl = function()
 end
 
 ---@return string
-M.major_hl = function()
-	local name = "Major"
+M.latest_hl = function()
+	local name = "Latest"
 	vim.api.nvim_set_hl(0, name, {
-		fg = M.color_config.major,
+		fg = M.color_config.latest,
 	})
 
 	return name
 end
 
 ---@return string
-M.minor_hl = function()
-	local name = "Minor"
+M.wanted_hl = function()
+	local name = "Wanted"
 	vim.api.nvim_set_hl(0, name, {
-		fg = M.color_config.minor,
+		fg = M.color_config.wanted,
 	})
 
 	return name
 end
 
----@return string
-M.up_to_date_hl = function()
-	local name = "UpToDate"
-	vim.api.nvim_set_hl(0, name, {
-		fg = M.color_config.up_to_date,
-	})
-
-	return name
-end
-
+---@param line_number integer
+---@param package_version string
+---@param namespace_id integer
+---@param icon string
 M.set_virtual_text = function(line_number, package_version, namespace_id, icon, style)
 	vim.api.nvim_buf_set_extmark(0, namespace_id, line_number - 1, 0, {
 		virt_text = {
@@ -86,24 +78,8 @@ M.get_docker_config = function(package_config)
 	return docker_config
 end
 
----@param package_name string
----@return integer?
-M.get_current_line_number = function(package_name)
-	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-
-	for line_number, line_content in ipairs(lines) do
-		if package_name == nil then
-			goto continue
-		end
-
-		if string.find(line_content, '"' .. package_name .. '":', 1, true) then
-			return line_number
-		end
-
-		::continue::
-	end
-
-	return nil
+M.get_package_name_from_line = function(line_content)
+	return line_content:match('"([^"]+)"')
 end
 
 return M

@@ -4,8 +4,8 @@ local spinner = require("package-version.utils.spinner")
 local logger = require("package-version.utils.logger")
 local common = require("package-version.utils.common")
 
-local is_npm_outdated_virtual_line_visible = false
-local is_npm_installed_virtual_line_visible = false
+local is_outdated_virtual_line_visible = false
+local is_installed_virtual_line_visible = false
 
 ---@param command string
 ---@param docker_config? DockerConfig
@@ -32,10 +32,10 @@ end
 M.installed = function(package_config)
 	local namespace_id = vim.api.nvim_create_namespace("NPM Installed")
 
-	if is_npm_installed_virtual_line_visible then
+	if is_installed_virtual_line_visible then
 		vim.api.nvim_buf_clear_namespace(0, namespace_id, 0, -1)
 
-		is_npm_installed_virtual_line_visible = false
+		is_installed_virtual_line_visible = false
 
 		spinner.hide()
 
@@ -46,15 +46,21 @@ M.installed = function(package_config)
 
 	local installed = {}
 
-	local on_exit = function(job_id, code, event)
-		if code ~= 0 then
-			logger.error("Command NPM installed' failed with code: " .. code)
-
-			return
-		end
+	local on_exit = function(code)
+		-- if code ~= 0 then
+		-- 	logger.error("Command NPM installed' failed with code: " .. code)
+		--
+		-- 	return
+		-- end
 
 		local json_str = table.concat(installed, "\n")
-		local ok, result = pcall(vim.fn.json_decode, json_str)
+
+		local ok
+
+		---@type table<{dependencies: table<string, {version: string}>, devDependencies: table<string, {version: string}>}>
+		local result
+
+		ok, result = pcall(vim.fn.json_decode, json_str)
 
 		if not ok then
 			logger.error("JSON decode error: " .. result)
@@ -62,15 +68,18 @@ M.installed = function(package_config)
 			return
 		end
 
-		for package_name, package_info in pairs(result.dependencies) do
-			local line_number = common.get_current_line_number(package_name)
+		local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
-			if line_number then
-				common.set_virtual_text(line_number, package_info.version, namespace_id, "  ", color_config.current)
+		for line_number, line_content in ipairs(lines) do
+			local package_name = common.get_package_name_from_line(line_content)
+			local current_package = result.dependencies[package_name]
+
+			if current_package ~= nil then
+				common.set_virtual_text(line_number, current_package.version, namespace_id, "", color_config.current)
 			end
 		end
 
-		is_npm_installed_virtual_line_visible = true
+		is_installed_virtual_line_visible = true
 
 		spinner.hide()
 	end
@@ -104,10 +113,10 @@ end
 M.outdated = function(package_config)
 	local namespace_id = vim.api.nvim_create_namespace("NPM Outdated")
 
-	if is_npm_outdated_virtual_line_visible then
+	if is_outdated_virtual_line_visible then
 		vim.api.nvim_buf_clear_namespace(0, namespace_id, 0, -1)
 
-		is_npm_outdated_virtual_line_visible = false
+		is_outdated_virtual_line_visible = false
 
 		spinner.hide()
 
@@ -116,20 +125,20 @@ M.outdated = function(package_config)
 
 	local color_config = common.get_default_color_config(package_config)
 
-	local major_hl = common.major_hl()
-	local minor_hl = common.minor_hl()
+	local latest_hl = common.latest_hl()
+	local wanted_hl = common.wanted_hl()
 
 	local outdated = {}
 
-	local on_exit = function(job_id, code, event)
-		-- if code ~= 0 then
-		-- 	logger.error("Command NPM outdated' failed with code: " .. code)
-		--
-		-- 	return
-		-- end
-
+	local on_exit = function()
 		local json_str = table.concat(outdated, "\n")
-		local ok, result = pcall(vim.fn.json_decode, json_str)
+
+		local ok
+
+		---@type table<string, {current: string, wanted: string, latest: string}>
+		local result
+
+		ok, result = pcall(vim.fn.json_decode, json_str)
 
 		if not ok then
 			logger.error("JSON decode error: " .. result)
@@ -137,26 +146,39 @@ M.outdated = function(package_config)
 			return
 		end
 
-		for package_name, package_info in pairs(result) do
-			local line_number = common.get_current_line_number(package_name)
-			common.set_virtual_text(line_number, package_info.current, namespace_id, "", color_config.current)
+		local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
-			if line_number then
-				if package_info.current ~= package_info.wanted and package_info.wanted == package_info.latest then
-					common.set_virtual_text(line_number, package_info.wanted, namespace_id, " ", minor_hl)
+		for line_number, line_content in ipairs(lines) do
+			local package_name = common.get_package_name_from_line(line_content)
+			local current_package = result[package_name]
+
+			if current_package ~= nil then
+				common.set_virtual_text(line_number, current_package.current, namespace_id, "", color_config.current)
+
+				if
+					current_package.current ~= current_package.wanted
+					and current_package.wanted == current_package.latest
+				then
+					common.set_virtual_text(line_number, current_package.wanted, namespace_id, " ", wanted_hl)
 
 					goto continue
 				end
 
-				if package_info.current ~= package_info.wanted and package_info.wanted ~= package_info.latest then
-					common.set_virtual_text(line_number, package_info.latest, namespace_id, " ", major_hl)
-					common.set_virtual_text(line_number, package_info.wanted, namespace_id, " ", minor_hl)
+				if
+					current_package.current ~= current_package.wanted
+					and current_package.wanted ~= current_package.latest
+				then
+					common.set_virtual_text(line_number, current_package.latest, namespace_id, " ", latest_hl)
+					common.set_virtual_text(line_number, current_package.wanted, namespace_id, " ", wanted_hl)
 
 					goto continue
 				end
 
-				if package_info.current == package_info.wanted and package_info.wanted ~= package_info.latest then
-					common.set_virtual_text(line_number, package_info.latest, namespace_id, " ", major_hl)
+				if
+					current_package.current == current_package.wanted
+					and current_package.wanted ~= current_package.latest
+				then
+					common.set_virtual_text(line_number, current_package.latest, namespace_id, " ", latest_hl)
 
 					goto continue
 				end
@@ -165,7 +187,7 @@ M.outdated = function(package_config)
 			end
 		end
 
-		is_npm_outdated_virtual_line_visible = true
+		is_outdated_virtual_line_visible = true
 
 		spinner.hide()
 	end
