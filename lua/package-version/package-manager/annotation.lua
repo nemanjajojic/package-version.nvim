@@ -4,9 +4,8 @@
 ---@field docker? DockerConfig
 ---
 ---@class ColorConfig
----@field minor? string
----@field major? string
----@field up_to_date? string
+---@field wanted? string
+---@field latest? string
 ---@field current? string
 ---@field abandoned? string
 ---
@@ -23,3 +22,4 @@
 ---@field composer_container_name? string
 ---@field npm_container_name? string
 ---@field yarn_container_name? string
+---@field pnpm_container_name? string

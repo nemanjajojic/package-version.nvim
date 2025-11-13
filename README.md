@@ -7,7 +7,8 @@
 
 [![Composer](https://img.shields.io/badge/Composer-%232E7EEA.svg?style=for-the-badge&logo=composer&logoColor=white)](https://getcomposer.org/)
 [![NPM](https://img.shields.io/badge/NPM-%23CB3837.svg?style=for-the-badge&logo=npm&logoColor=white)](https://www.npmjs.com/)
-![Yarn](https://img.shields.io/badge/yarn-%232C8EBB.svg?style=for-the-badge&logo=yarn&logoColor=white)
+[![Yarn](https://img.shields.io/badge/yarn-%232C8EBB.svg?style=for-the-badge&logo=yarn&logoColor=white)](https://yarnpkg.com/)
+[![PNPM](https://img.shields.io/badge/pnpm-%234a4a4a.svg?style=for-the-badge&logo=pnpm&logoColor=f69220)](https://pnpm.io)
 
 ## The Problem
 
@@ -87,10 +88,9 @@ you can customize it to your liking.
 config = function()
     require("package-version").setup({
         color = {
-            major = "",
-            minor = "",
+            latest = "",
+            wanted = "",
             current = "",
-            up_to_date = "",
             abandoned = "",
         },
         spinner = {
@@ -99,7 +99,8 @@ config = function()
         docker = {
             composer_container_name = "your_composer_container_name",
             npm_container_name = "your_npm_container_name",
-            yarn_container_name = "your_yarn_container_name",
+            npm_container_name = "your_npm_container_name",
+            pnpm_container_name = "your_pnpm_container_name",
         }
     })
 end
@@ -114,11 +115,10 @@ you should should customize this config according to your preferences.
 > [!NOTE]
 > You can use hexadecimal color codes eg. `#FF5733`
 
-- `major` - color for major version updates eg. from v1.0.0 to v2.0.0
-- `minor` - color for minor version updates eg. from v1.0.0 to v1.1.0
-- `current` - color for current installed version
-- `up_to_date` - color for up to date packages eg. package is already on latest version
-- `abandoned` - color for abandoned packages eg. package is no longer maintained
+- `latest`- latest version available
+- `wanted` - latest available version that matches semver range
+- `current` - currently installed version
+- `abandoned` - abandoned or deprecated package
 
 ### Spinner options
 
@@ -143,6 +143,7 @@ you have to set proper container name for each package manager.
 - `composer_container_name` - in case you wanna use composer
 - `npm_container_name` - in case you wanna use npm
 - `yarn_container_name` - in case you wanna use yarn
+- `pnpm_container_name` - in case you wanna use pnpm
 
 #### Local
 
@@ -156,6 +157,7 @@ In case you wanna use local installation of package manager,
 
 - [Nerd Fonts](https://www.nerdfonts.com/) -  for providing awesome icons
 - [jellydn](https://github.com/jellydn/spinner.nvim) - for providing base spinner functionality
+- [ileriayo](https://github.com/Ileriayo/markdown-badges) - for providing markdown badges
 
 ## ✨ Next Steps
 

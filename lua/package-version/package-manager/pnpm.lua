@@ -1,7 +1,7 @@
 local M = {}
 
-local logger = require("package-version.utils.logger")
 local spinner = require("package-version.utils.spinner")
+local logger = require("package-version.utils.logger")
 local common = require("package-version.utils.common")
 
 local is_outdated_virtual_line_visible = false
@@ -9,25 +9,20 @@ local is_installed_virtual_line_visible = false
 
 ---@param command string
 ---@param docker_config? DockerConfig
----@param ignore_platform boolean
 ---@return string|nil
-local prepare_command = function(command, docker_config, ignore_platform)
+local prepare_command = function(command, docker_config)
 	if docker_config then
-		if not docker_config.composer_container_name or docker_config.composer_container_name == "" then
+		if not docker_config.pnpm_container_name or docker_config.pnpm_container_name == "" then
 			logger.error(
-				"Docker PHP container name "
-					.. docker_config.composer_container_name
+				"Docker npm container name "
+					.. docker_config.pnpm_container_name
 					.. " is not specified in the configuration."
 			)
 
 			return nil
 		end
 
-		return "docker exec " .. docker_config.composer_container_name .. " " .. command
-	end
-
-	if ignore_platform then
-		command = command .. " --ignore-platform-reqs"
+		return "docker exec " .. docker_config.pnpm_container_name .. " " .. command
 	end
 
 	return command
@@ -35,7 +30,7 @@ end
 
 ---@param package_config? PackageVersionConfig
 M.installed = function(package_config)
-	local namespace_id = vim.api.nvim_create_namespace("Composer Installed")
+	local namespace_id = vim.api.nvim_create_namespace("PNPM Installed")
 
 	if is_installed_virtual_line_visible then
 		vim.api.nvim_buf_clear_namespace(0, namespace_id, 0, -1)
@@ -53,7 +48,7 @@ M.installed = function(package_config)
 
 	local on_exit = function(job_id, code, event)
 		if code ~= 0 then
-			logger.error("Command 'composer outdated' failed with code: " .. code)
+			logger.error("Command PNPM installed' failed with code: " .. code)
 
 			return
 		end
@@ -62,7 +57,7 @@ M.installed = function(package_config)
 
 		local ok
 
-		---@type table<{locked: table<{name: string, version: string}>}>
+		---@type table<{dependencies: table<string, {version: string}>, devDependencies: table<string, {version: string}>}>
 		local result
 
 		ok, result = pcall(vim.fn.json_decode, json_str)
@@ -74,19 +69,13 @@ M.installed = function(package_config)
 		end
 
 		---@type table<string, {version: string}>
-		local packages = {}
-
-		for _, package_info in pairs(result.locked) do
-			packages[package_info.name] = {
-				version = package_info.version,
-			}
-		end
+		local dependencies = vim.tbl_extend("force", result[1].dependencies, result[1].devDependencies)
 
 		local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
 		for line_number, line_content in ipairs(lines) do
 			local package_name = common.get_package_name_from_line(line_content)
-			local current_package = packages[package_name]
+			local current_package = dependencies[package_name]
 
 			if current_package ~= nil then
 				common.set_virtual_text(line_number, current_package.version, namespace_id, "", color_config.current)
@@ -100,7 +89,7 @@ M.installed = function(package_config)
 
 	local docker_config = common.get_docker_config(package_config)
 
-	local installed_command = prepare_command("composer show --locked --direct --format=json", docker_config, false)
+	local installed_command = prepare_command("pnpm list --depth=0 --json", docker_config)
 
 	if not installed_command then
 		return
@@ -124,8 +113,8 @@ M.installed = function(package_config)
 end
 
 ---@param package_config? PackageVersionConfig
-M.outated = function(package_config)
-	local namespace_id = vim.api.nvim_create_namespace("Composer Outdated")
+M.outdated = function(package_config)
+	local namespace_id = vim.api.nvim_create_namespace("PNPM Outdated")
 
 	if is_outdated_virtual_line_visible then
 		vim.api.nvim_buf_clear_namespace(0, namespace_id, 0, -1)
@@ -146,17 +135,11 @@ M.outated = function(package_config)
 	local outdated = {}
 
 	local on_exit = function(job_id, code, event)
-		if code ~= 0 then
-			logger.error("Command 'composer outdated' failed with code: " .. code)
-
-			return
-		end
-
 		local json_str = table.concat(outdated, "\n")
 
 		local ok
 
-		---@type table<{installed: table<{version: string, name: string, latest: string, ["latest-status"]: string, abandoned: boolean}>}>
+		---@type table<string, {current: string, wanted: string, latest: string, isDeprecated: boolean}>
 		local result
 
 		ok, result = pcall(vim.fn.json_decode, json_str)
@@ -167,36 +150,47 @@ M.outated = function(package_config)
 			return
 		end
 
-		---@type table<string, {version: string, latest: string, status: string, abandoned: boolean}>
-		local packages = {}
-
-		for _, package_info in pairs(result.installed) do
-			packages[package_info.name] = {
-				version = package_info.version,
-				latest = package_info.latest,
-				status = package_info["latest-status"],
-				abandoned = package_info.abandoned,
-			}
-		end
-
 		local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
 		for line_number, line_content in ipairs(lines) do
 			local package_name = common.get_package_name_from_line(line_content)
-			local current_package = packages[package_name]
+			local current_package = result[package_name]
 
 			if current_package ~= nil then
-				common.set_virtual_text(line_number, current_package.version, namespace_id, "", color_config.current)
+				common.set_virtual_text(line_number, current_package.current, namespace_id, "", color_config.current)
 
-				if current_package.status == "update-possible" then
+				if
+					current_package.current ~= current_package.wanted
+					and current_package.wanted == current_package.latest
+				then
+					common.set_virtual_text(line_number, current_package.wanted, namespace_id, " ", wanted_hl)
+
+					goto continue
+				end
+
+				if
+					current_package.current ~= current_package.wanted
+					and current_package.wanted ~= current_package.latest
+				then
 					common.set_virtual_text(line_number, current_package.latest, namespace_id, " ", latest_hl)
-				else
-					common.set_virtual_text(line_number, current_package.latest, namespace_id, " ", wanted_hl)
+					common.set_virtual_text(line_number, current_package.wanted, namespace_id, " ", wanted_hl)
+
+					goto continue
 				end
 
-				if current_package.abandoned then
-					common.set_virtual_text(line_number, "Abandoned", namespace_id, "  ", abandoned_hl)
+				if
+					current_package.current == current_package.wanted
+					and current_package.wanted ~= current_package.latest
+				then
+					common.set_virtual_text(line_number, current_package.latest, namespace_id, " ", latest_hl)
+
+					goto continue
 				end
+				if current_package.isDeprecated then
+					common.set_virtual_text(line_number, "Deprecated", namespace_id, " ", abandoned_hl)
+				end
+
+				::continue::
 			end
 		end
 
@@ -206,7 +200,8 @@ M.outated = function(package_config)
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local outdated_command = prepare_command("composer outdated --direct --format=json", docker_config, true)
+
+	local outdated_command = prepare_command("pnpm outdated --json", docker_config)
 
 	if not outdated_command then
 		return
