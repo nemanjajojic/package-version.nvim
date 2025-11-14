@@ -78,8 +78,10 @@ M.get_docker_config = function(package_config)
 	return docker_config
 end
 
-M.get_package_name_from_line = function(line_content)
-	return line_content:match('"([^"]+)"')
+---@param line_content string
+---@return string|nil
+M.get_package_name_from_line_json = function(line_content)
+	return line_content:match('"([^"]+)"%s*:%s*"[%^~]%d+%.%d+%.?%d*"')
 end
 
 return M

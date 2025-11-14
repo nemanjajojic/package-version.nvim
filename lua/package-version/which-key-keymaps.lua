@@ -39,6 +39,30 @@ M.register_which_keys = function(config)
 			end,
 			desc = "Toggle outdated package versions",
 		},
+		{
+			"<leader>vu",
+			group = "Update All",
+			icon = {
+				icon = "󰏖 ",
+				color = "green",
+			},
+			function()
+				strategy.update_all(config)
+			end,
+			desc = "Update all packages to latest version",
+		},
+		{
+			"<leader>vs",
+			group = "Update Single",
+			icon = {
+				icon = "󰏖 ",
+				color = "green",
+			},
+			function()
+				strategy.update_single(config)
+			end,
+			desc = "Update single package to latest version",
+		},
 	})
 end
 

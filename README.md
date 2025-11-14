@@ -13,8 +13,8 @@
 ## The Problem
 
 Imagine this: you’re in Neovim, and you want to keep an eye on your
-installed, outdated, and abandoned packages without having to leave the
-editor in a single keystroke. Well, now you can! With this plugin,
+installed, outdated, abandoned packages, or you wanna quickly update them without
+having to leave the editor in a single keystroke. Well, now you can! With this plugin,
 you can toggle package versions right inside your main package manager file.
 
 ![Package version](/images/package-version.gif)
@@ -39,16 +39,23 @@ Install plugin using package manager of your choice, for example with
 
 You have two commands available:
 
-- `:PackageVersionInstalled`
-- `:PackageVersionOutdated`
+- `:PackageVersionInstalled` - toggle installed package version
+- `:PackageVersionOutdated` - toggle outdated package version
+- `:PackageVersionUpdateAll` - update all outdated packages to latest version according to semver range
+- `:PackageVersionUpdateSingle` - update single package to latest version according to semver range.
+
+> [!IMPORTANT]
+> `PackageVersionUpdateSingle` command will try to update package under cursor
 
 ## ⌨️ Mappings
 
 If you already using `which-key`, you can use default keybinding
 provided by plugin.
 
-- `<leader>vi` - installed package version
-- `<leader>vo` - outdated package version
+- `<leader>vi` - toggle installed package version
+- `<leader>vo` - toggle outdated package version
+- `<leader>vu` - update all outdated packages according to semver range
+- `<leader>vs` - update single package according to semver range
 
 > [!IMPORTANT]
 > If you are not using `which-key`, you can set keybindings to your preference eg.
@@ -56,7 +63,7 @@ provided by plugin.
 > ```lua
 > {
 >    "nemanjajojic/package-version.nvim",
->    cmd = { "PackageVersionInstalled","PackageVersionOutdated" },
+>    cmd = { "PackageVersionInstalled" },
 >    config = function()
 >      require("package-version").setup()
 >    end,
@@ -67,12 +74,6 @@ provided by plugin.
 >            "<cmd>PackageVersionInstalled<cr>",
 >            mode = "n", 
 >            desc = "Toggle installed package version" 
->        },
->        {
->            "<leader>key",
->            "<cmd>PackageVersionOutdated<cr>",
->            mode = "n", 
->            desc = "Toggle outdated package version" 
 >        },
 >    }
 >}
@@ -152,6 +153,11 @@ In case you wanna use local installation of package manager,
 
 > [!IMPORTANT]
 > All package managers must be installed and available in your system `PATH`.
+
+## 🩺 Health Check
+
+Run `:checkhealth package-version` command to check if plugin is properly
+configured and have everything need to work properly.
 
 ## 🙏 Honorable Mentions
 

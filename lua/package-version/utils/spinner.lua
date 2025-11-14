@@ -144,7 +144,8 @@ function M.show(spinner_config)
 	)
 end
 
-function M.hide()
+---@param message? string
+function M.hide(message)
 	if spinner_timer then
 		spinner_timer:stop()
 		spinner_timer:close()
@@ -157,6 +158,10 @@ function M.hide()
 
 		if spinner_buffer then
 			vim.api.nvim_buf_delete(spinner_buffer, { force = true })
+		end
+
+		if message then
+			logger.info(message)
 		end
 	end
 end
