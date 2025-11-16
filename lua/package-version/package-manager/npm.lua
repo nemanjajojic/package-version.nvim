@@ -58,11 +58,14 @@ M.installed = function(package_config)
 	local installed = {}
 
 	local on_exit = function(code)
-		-- if code ~= 0 then
-		-- 	logger.error("Command NPM installed' failed with code: " .. code)
-		--
-		-- 	return
-		-- end
+		if code ~= 0 then
+			logger.error("Command 'npm list' failed with code: " .. code)
+
+			spinner.hide()
+			is_installed_command_running = false
+
+			return
+		end
 
 		local json_str = table.concat(installed, "\n")
 
@@ -150,7 +153,17 @@ M.outdated = function(package_config)
 
 	local outdated = {}
 
-	local on_exit = function()
+	local on_exit = function(code)
+		-- npm outdated returns exit code 1 when outdated packages exist, which is expected
+		if code ~= 0 and code ~= 1 then
+			logger.error("Command 'npm outdated' failed with code: " .. code)
+
+			spinner.hide()
+			is_outdated_command_running = false
+
+			return
+		end
+
 		local json_str = table.concat(outdated, "\n")
 
 		local ok
@@ -263,7 +276,7 @@ M.update_all = function(package_config)
 			return
 		end
 
-		spinner.hide("NPM packages updated sucessuflly!")
+		spinner.hide("NPM packages updated successfully!")
 
 		is_update_all_command_running = false
 	end
@@ -337,7 +350,7 @@ M.update_single = function(package_config)
 		if result.changed == 0 then
 			spinner.hide("Package " .. package_name .. " is already up to date!")
 		else
-			spinner.hide("Package " .. package_name .. " updated sucessuflly!")
+			spinner.hide("Package " .. package_name .. " updated successfully!")
 		end
 
 		is_update_single_command_running = false

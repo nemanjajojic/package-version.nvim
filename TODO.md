@@ -11,4 +11,6 @@
 - [x] Update all packages
 - [x] Update single package
 - [x] Add health check command
+- [] Add tests
+- [] Add list of updated packages after update command
 - [] Support PyPi

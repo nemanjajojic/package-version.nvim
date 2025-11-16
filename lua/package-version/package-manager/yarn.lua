@@ -10,6 +10,7 @@ local is_installed_virtual_line_visible = false
 local is_installed_command_running = false
 local is_outdated_command_running = false
 local is_update_all_command_running = false
+local is_update_single_command_running = false
 
 ---@param command string
 ---@param docker_config? DockerConfig
@@ -58,7 +59,10 @@ M.installed = function(package_config)
 
 	local on_exit = function(job_id, code, event)
 		if code ~= 0 then
-			logger.error("Command Yarn installed' failed with code: " .. code)
+			logger.error("Command 'yarn list' failed with code: " .. code)
+
+			spinner.hide()
+			is_installed_command_running = false
 
 			return
 		end
@@ -161,11 +165,15 @@ M.outdated = function(package_config)
 	local outdated = {}
 
 	local on_exit = function(job_id, code, event)
-		-- if code ~= 0 then
-		-- 	logger.error("Command Yarn outdated' failed with code: " .. code)
-		--
-		-- 	return
-		-- end
+		-- yarn outdated returns exit code 1 when outdated packages exist, which is expected
+		if code ~= 0 and code ~= 1 then
+			logger.error("Command 'yarn outdated' failed with code: " .. code)
+
+			spinner.hide()
+			is_outdated_command_running = false
+
+			return
+		end
 
 		local json_str = table.concat(outdated, "\n")
 
@@ -290,7 +298,7 @@ M.update_all = function(package_config)
 			return
 		end
 
-		spinner.hide("Yarn packages updated sucessuflly!")
+		spinner.hide("Yarn packages updated successfully!")
 
 		is_update_all_command_running = false
 	end
@@ -305,6 +313,60 @@ M.update_all = function(package_config)
 	spinner.show(package_config and package_config.spinner)
 
 	vim.fn.jobstart(update_all_command, {
+		stdout_buffered = false,
+		on_exit = on_exit,
+	})
+end
+
+---@param package_config? PackageVersionConfig
+M.update_single = function(package_config)
+	if is_update_single_command_running then
+		logger.warning("Yarn update single command is already running.")
+
+		return
+	end
+
+	local current_line = vim.api.nvim_get_current_line()
+	local package_name = common.get_package_name_from_line_json(current_line)
+
+	if not package_name then
+		logger.warning(
+			"Could not determine package name from the current line. Make sure the cursor is on a valid package line."
+		)
+
+		return
+	end
+
+	logger.info("Updating package: " .. package_name)
+
+	is_update_single_command_running = true
+
+	local on_exit = function(job_id, code, event)
+		if code ~= 0 then
+			logger.error("Command yarn upgrade " .. package_name .. " failed with code: " .. code)
+
+			spinner.hide()
+
+			is_update_single_command_running = false
+
+			return
+		end
+
+		spinner.hide("Package " .. package_name .. " updated successfully!")
+
+		is_update_single_command_running = false
+	end
+
+	local docker_config = common.get_docker_config(package_config)
+	local update_one_command = prepare_command("yarn upgrade " .. package_name .. " --silent", docker_config)
+
+	if not update_one_command then
+		return
+	end
+
+	spinner.show(package_config and package_config.spinner)
+
+	vim.fn.jobstart(update_one_command, {
 		stdout_buffered = false,
 		on_exit = on_exit,
 	})
