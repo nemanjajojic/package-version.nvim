@@ -100,7 +100,7 @@ config = function()
         docker = {
             composer_container_name = "your_composer_container_name",
             npm_container_name = "your_npm_container_name",
-            npm_container_name = "your_npm_container_name",
+            yarn_container_name = "your_yarn_container_name",
             pnpm_container_name = "your_pnpm_container_name",
         }
     })
