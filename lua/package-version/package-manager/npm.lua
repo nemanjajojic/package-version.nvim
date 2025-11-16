@@ -7,6 +7,11 @@ local common = require("package-version.utils.common")
 local is_outdated_virtual_line_visible = false
 local is_installed_virtual_line_visible = false
 
+local is_installed_command_running = false
+local is_outdated_command_running = false
+local is_update_all_command_running = false
+local is_update_single_command_running = false
+
 ---@param command string
 ---@param docker_config? DockerConfig
 ---@return string|nil
@@ -30,14 +35,20 @@ end
 
 ---@param package_config? PackageVersionConfig
 M.installed = function(package_config)
+	if is_installed_command_running then
+		logger.warning("NPM installed command is already running.")
+
+		return
+	end
+
 	local namespace_id = vim.api.nvim_create_namespace("NPM Installed")
 
 	if is_installed_virtual_line_visible then
 		vim.api.nvim_buf_clear_namespace(0, namespace_id, 0, -1)
 
-		is_installed_virtual_line_visible = false
-
 		spinner.hide()
+
+		is_installed_virtual_line_visible = false
 
 		return
 	end
@@ -71,7 +82,7 @@ M.installed = function(package_config)
 		local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
 		for line_number, line_content in ipairs(lines) do
-			local package_name = common.get_package_name_from_line(line_content)
+			local package_name = common.get_package_name_from_line_json(line_content)
 			local current_package = result.dependencies[package_name]
 
 			if current_package ~= nil then
@@ -79,9 +90,10 @@ M.installed = function(package_config)
 			end
 		end
 
-		is_installed_virtual_line_visible = true
-
 		spinner.hide()
+
+		is_installed_virtual_line_visible = true
+		is_installed_command_running = false
 	end
 
 	local docker_config = common.get_docker_config(package_config)
@@ -93,6 +105,8 @@ M.installed = function(package_config)
 	end
 
 	spinner.show(package_config and package_config.spinner)
+
+	is_installed_command_running = true
 
 	vim.fn.jobstart(installed_command, {
 		stdout_buffered = true,
@@ -111,14 +125,20 @@ end
 
 ---@param package_config? PackageVersionConfig
 M.outdated = function(package_config)
+	if is_outdated_command_running then
+		logger.warning("NPM outdated command is already running.")
+
+		return
+	end
+
 	local namespace_id = vim.api.nvim_create_namespace("NPM Outdated")
 
 	if is_outdated_virtual_line_visible then
 		vim.api.nvim_buf_clear_namespace(0, namespace_id, 0, -1)
 
-		is_outdated_virtual_line_visible = false
-
 		spinner.hide()
+
+		is_outdated_virtual_line_visible = false
 
 		return
 	end
@@ -149,7 +169,7 @@ M.outdated = function(package_config)
 		local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
 		for line_number, line_content in ipairs(lines) do
-			local package_name = common.get_package_name_from_line(line_content)
+			local package_name = common.get_package_name_from_line_json(line_content)
 			local current_package = result[package_name]
 
 			if current_package ~= nil then
@@ -187,9 +207,10 @@ M.outdated = function(package_config)
 			end
 		end
 
-		is_outdated_virtual_line_visible = true
-
 		spinner.hide()
+
+		is_outdated_virtual_line_visible = true
+		is_outdated_command_running = false
 	end
 
 	local docker_config = common.get_docker_config(package_config)
@@ -202,6 +223,8 @@ M.outdated = function(package_config)
 
 	spinner.show(package_config and package_config.spinner)
 
+	is_outdated_command_running = true
+
 	vim.fn.jobstart(outdated_command, {
 		stdout_buffered = true,
 		on_stdout = function(_, data)
@@ -213,6 +236,135 @@ M.outdated = function(package_config)
 				end
 			end
 		end,
+		on_exit = on_exit,
+	})
+end
+
+---@param package_config? PackageVersionConfig
+M.update_all = function(package_config)
+	if is_update_all_command_running then
+		logger.warning("NPM update all command is already running.")
+
+		return
+	end
+
+	logger.info("Updating all packages")
+
+	is_update_all_command_running = true
+
+	local on_exit = function(job_id, code, event)
+		if code ~= 0 then
+			logger.error("Command npm update failed with code: " .. code)
+
+			is_update_all_command_running = false
+
+			spinner.hide()
+
+			return
+		end
+
+		spinner.hide("NPM packages updated sucessuflly!")
+
+		is_update_all_command_running = false
+	end
+
+	local docker_config = common.get_docker_config(package_config)
+	local update_all_command = prepare_command("npm update --no-audit --no-progress", docker_config)
+
+	if not update_all_command then
+		return
+	end
+
+	spinner.show(package_config and package_config.spinner)
+
+	vim.fn.jobstart(update_all_command, {
+		stdout_buffered = false,
+		on_exit = on_exit,
+	})
+end
+
+---@param package_config? PackageVersionConfig
+M.update_single = function(package_config)
+	if is_update_single_command_running then
+		logger.warning("npm update single command is already running.")
+
+		return
+	end
+
+	local current_line = vim.api.nvim_get_current_line()
+	local package_name = common.get_package_name_from_line_json(current_line)
+
+	if not package_name then
+		logger.warning(
+			"Could not determine package name from the current line. Make sure the cursor is on a valid package line."
+		)
+
+		return
+	end
+
+	logger.info("Updating package: " .. package_name)
+
+	is_update_single_command_running = true
+
+	local command_output = {}
+
+	local on_exit = function(job_id, code, event)
+		if code ~= 0 then
+			logger.error("Command npm update " .. package_name .. " failed with code: " .. code)
+
+			spinner.hide()
+
+			is_update_single_command_running = false
+
+			return
+		end
+
+		local json_str = table.concat(command_output, "\n")
+
+		local ok
+
+		---@type table<{changed: string}>
+		local result
+
+		ok, result = pcall(vim.fn.json_decode, json_str)
+
+		if not ok then
+			logger.error("JSON decode error: " .. result)
+
+			return
+		end
+
+		if result.changed == 0 then
+			spinner.hide("Package " .. package_name .. " is already up to date!")
+		else
+			spinner.hide("Package " .. package_name .. " updated sucessuflly!")
+		end
+
+		is_update_single_command_running = false
+	end
+
+	local docker_config = common.get_docker_config(package_config)
+	local update_one_command =
+		prepare_command("npm update " .. package_name .. " --no-fund --no-audit --json", docker_config)
+
+	if not update_one_command then
+		return
+	end
+
+	spinner.show(package_config and package_config.spinner)
+
+	vim.fn.jobstart(update_one_command, {
+		stdout_buffered = true,
+		on_stdout = function(_, data)
+			if data then
+				for _, line in ipairs(data) do
+					if line ~= "" then
+						table.insert(command_output, line)
+					end
+				end
+			end
+		end,
+
 		on_exit = on_exit,
 	})
 end

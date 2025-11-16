@@ -154,4 +154,124 @@ M.outdated = function(package_config)
 	log_no_supported_file()
 end
 
+M.update_all = function(package_config)
+	local current_file_name = vim.fn.expand("%:t")
+
+	if current_file_name == compose_json_file_name then
+		composer.update_all(package_config)
+
+		return
+	end
+
+	if current_file_name == package_json_file_name then
+		if has_file(npm_lock_file_name) and (has_file(yarn_lock_file_name) or has_file(pnpm_lock_file_name)) then
+			logger.error(
+				"package-lock.json cannot coexist with yarn.lock or pnpm-lock.yaml. Please keep only one to avoid conflicts."
+			)
+
+			return
+		end
+
+		if has_file(yarn_lock_file_name) and (has_file(npm_lock_file_name) or has_file(pnpm_lock_file_name)) then
+			logger.error(
+				"yarn.lock cannot coexist with package-lock.json or pnpm-lock.yaml. Please keep only one to avoid conflicts."
+			)
+
+			return
+		end
+
+		if has_file(pnpm_lock_file_name) and (has_file(npm_lock_file_name) or has_file(yarn_lock_file_name)) then
+			logger.error(
+				"pnpm-lock.yaml cannot coexist with package-lock.json or yarn.lock. Please keep only one to avoid conflicts."
+			)
+
+			return
+		end
+
+		if has_file(npm_lock_file_name) then
+			npm.update_all(package_config)
+
+			return
+		end
+
+		if has_file(yarn_lock_file_name) then
+			yarn.update_all(package_config)
+
+			return
+		end
+
+		if has_file(pnpm_lock_file_name) then
+			pnpm.update_all(package_config)
+
+			return
+		end
+
+		no_strategy_for_package_json()
+
+		return
+	end
+
+	log_no_supported_file()
+end
+
+M.update_single = function(package_config)
+	local current_file_name = vim.fn.expand("%:t")
+
+	if current_file_name == compose_json_file_name then
+		composer.update_single(package_config)
+
+		return
+	end
+
+	if current_file_name == package_json_file_name then
+		if has_file(npm_lock_file_name) and (has_file(yarn_lock_file_name) or has_file(pnpm_lock_file_name)) then
+			logger.error(
+				"package-lock.json cannot coexist with yarn.lock or pnpm-lock.yaml. Please keep only one to avoid conflicts."
+			)
+
+			return
+		end
+
+		if has_file(yarn_lock_file_name) and (has_file(npm_lock_file_name) or has_file(pnpm_lock_file_name)) then
+			logger.error(
+				"yarn.lock cannot coexist with package-lock.json or pnpm-lock.yaml. Please keep only one to avoid conflicts."
+			)
+
+			return
+		end
+
+		if has_file(pnpm_lock_file_name) and (has_file(npm_lock_file_name) or has_file(yarn_lock_file_name)) then
+			logger.error(
+				"pnpm-lock.yaml cannot coexist with package-lock.json or yarn.lock. Please keep only one to avoid conflicts."
+			)
+
+			return
+		end
+
+		if has_file(npm_lock_file_name) then
+			npm.update_single(package_config)
+
+			return
+		end
+
+		if has_file(yarn_lock_file_name) then
+			yarn.update_all(package_config)
+
+			return
+		end
+
+		if has_file(pnpm_lock_file_name) then
+			pnpm.update_single(package_config)
+
+			return
+		end
+
+		no_strategy_for_package_json()
+
+		return
+	end
+
+	log_no_supported_file()
+end
+
 return M

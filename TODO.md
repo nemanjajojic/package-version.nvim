@@ -7,6 +7,8 @@
 - [x] Create strategy and adapter in order to add more package managers
 - [x] Support docker and local environments
 - [x] Support yarn
-- [ ] Support pNpm
-- [ ] Support PyPi
-- [ ] 🚀 release v1.0
+- [x] Support pnpm
+- [x] Update all packages
+- [x] Update single package
+- [x] Add health check command
+- [] Support PyPi

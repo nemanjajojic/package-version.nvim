@@ -13,6 +13,11 @@ M.info = function(message)
 end
 
 ---@param message string
+M.warning = function(message)
+	vim.notify(message, vim.log.levels.WARN, title)
+end
+
+---@param message string
 M.error = function(message)
 	vim.notify(message, vim.log.levels.ERROR, title)
 end
