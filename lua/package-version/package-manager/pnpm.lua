@@ -59,7 +59,10 @@ M.installed = function(package_config)
 
 	local on_exit = function(job_id, code, event)
 		if code ~= 0 then
-			logger.error("Command PNPM installed' failed with code: " .. code)
+			logger.error("Command 'pnpm list' failed with code: " .. code)
+
+			spinner.hide()
+			is_installed_command_running = false
 
 			return
 		end
@@ -155,6 +158,16 @@ M.outdated = function(package_config)
 	local outdated = {}
 
 	local on_exit = function(job_id, code, event)
+		-- pnpm outdated returns exit code 1 when outdated packages exist, which is expected
+		if code ~= 0 and code ~= 1 then
+			logger.error("Command 'pnpm outdated' failed with code: " .. code)
+
+			spinner.hide()
+			is_outdated_command_running = false
+
+			return
+		end
+
 		local json_str = table.concat(outdated, "\n")
 
 		local ok
@@ -270,7 +283,7 @@ M.update_all = function(package_config)
 			return
 		end
 
-		spinner.hide("PNPM packages updated sucessuflly!")
+		spinner.hide("PNPM packages updated successfully!")
 
 		is_update_all_command_running = false
 	end
@@ -329,7 +342,7 @@ M.update_single = function(package_config)
 		if is_package_up_to_date then
 			spinner.hide("Package " .. package_name .. " is already up to date!")
 		else
-			spinner.hide("Package " .. package_name .. " updated sucessuflly!")
+			spinner.hide("Package " .. package_name .. " updated successfully!")
 		end
 
 		is_update_single_command_running = false

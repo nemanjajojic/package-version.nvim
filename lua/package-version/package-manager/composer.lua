@@ -64,7 +64,10 @@ M.installed = function(package_config)
 
 	local on_exit = function(job_id, code, event)
 		if code ~= 0 then
-			logger.error("Command 'composer outdated' failed with code: " .. code)
+			logger.error("Command 'composer show' failed with code: " .. code)
+
+			spinner.hide()
+			is_installed_command_running = false
 
 			return
 		end
@@ -138,7 +141,7 @@ M.installed = function(package_config)
 end
 
 ---@param package_config? PackageVersionConfig
-M.outated = function(package_config)
+M.outdated = function(package_config)
 	if is_outdated_command_running then
 		logger.warning("Composer outdated command is already running.")
 
@@ -168,6 +171,9 @@ M.outated = function(package_config)
 	local on_exit = function(job_id, code, event)
 		if code ~= 0 then
 			logger.error("Command 'composer outdated' failed with code: " .. code)
+
+			spinner.hide()
+			is_outdated_command_running = false
 
 			return
 		end
@@ -275,7 +281,7 @@ M.update_all = function(package_config)
 			return
 		end
 
-		spinner.hide("Composer packages updated sucessuflly!")
+		spinner.hide("Composer packages updated successfully!")
 
 		is_update_all_command_running = false
 	end
@@ -335,7 +341,7 @@ M.update_single = function(package_config)
 		if is_package_up_to_date then
 			spinner.hide("Package " .. package_name .. " is already up to date!")
 		else
-			spinner.hide("Package " .. package_name .. " updated sucessuflly!")
+			spinner.hide("Package " .. package_name .. " updated successfully!")
 		end
 
 		is_update_single_command_running = false

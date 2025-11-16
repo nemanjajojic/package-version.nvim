@@ -17,31 +17,19 @@ end
 M.register_commands = function(config)
 	create_command("PackageVersionInstalled", function()
 		strategy.installed(config)
-	end, "Toggle instaled package version")
+	end, "Toggle installed package version")
 
 	create_command("PackageVersionOutdated", function()
 		strategy.outdated(config)
-	end, "Togglge outdated package version")
+	end, "Toggle outdated package version")
 
 	create_command("PackageVersionUpdateAll", function()
 		strategy.update_all(config)
 	end, "Update all packages")
 
-	create_command("PackageVersionUpdateOne", function()
+	create_command("PackageVersionUpdateSingle", function()
 		strategy.update_single(config)
-	end, "Update singgle packages")
+	end, "Update single package")
 end
 
--- M.register_autocmds = function()
--- 	vim.api.nvim_create_augroup("InstlledGroup", { clear = true })
---
--- 	vim.api.nvim_create_autocmd({ "BufReadPost" }, {
--- 		group = "InstlledGroup",
--- 		pattern = "composer.json",
--- 		callback = function()
--- 			vim.api.nvim_command("PackageVersionInstalled")
--- 			vim.api.nvim_command("PackageVersionInstalled")
--- 		end,
--- 	})
--- end
 return M

@@ -35,7 +35,7 @@ local executable_managers = function()
 	else
 		vim.health.warn(
 			"Local Pnpm is not found in your system PATH.",
-			"In case you are using Pnpm, or using it via docker, you can ignore this warning"
+			"In case you are not using Pnpm, or using it via docker, you can ignore this warning"
 		)
 	end
 
@@ -46,12 +46,12 @@ local executable_managers = function()
 	else
 		vim.health.warn(
 			"Local Yarn is not found in your system PATH.",
-			"In case you are using Yarn, or using it via docker, you can ignore this warning"
+			"In case you are not using Yarn, or using it via docker, you can ignore this warning"
 		)
 	end
 
 	if count_of_available_managers == 0 then
-		vim.health.error("No package managers found localay", {
+		vim.health.error("No package managers found locally", {
 			"You have to install at least one of the supported package managers: Composer, Npm, Pnpm, Yarn.",
 			"Or you can use via docker by setting up the docker configuration.",
 		})
@@ -66,14 +66,14 @@ function M.check()
 	vim.health.info("Depends on on your project you'll not have to have all package managers.")
 
 	if vim.fn.executable("docker") == 1 then
-		vim.health.ok("Docker is not installed.")
+		vim.health.ok("Docker is installed.")
 
 		local docker = plugin.config.docker
 
 		if not docker then
 			vim.health.warn(
 				"Docker configuration is not set.",
-				"In case you have plugin manager installed localy you can ignore this warning"
+				"In case you have plugin manager installed locally you can ignore this warning"
 			)
 
 			executable_managers()
@@ -85,7 +85,7 @@ function M.check()
 			else
 				vim.health.warn(
 					"Composer Docker container name is not set.",
-					"If you are not using composer, or you are using localy, you can ignore this warning"
+					"If you are not using composer, or you are using locally, you can ignore this warning"
 				)
 			end
 
@@ -96,7 +96,7 @@ function M.check()
 			else
 				vim.health.warn(
 					"Npm Docker container name is not set.",
-					"If you are not using npm, or you are using localy, you can ignore this warning"
+					"If you are not using npm, or you are using locally, you can ignore this warning"
 				)
 			end
 
@@ -107,7 +107,7 @@ function M.check()
 			else
 				vim.health.warn(
 					"Pnpm Docker container name is not set.",
-					"If you are not using pnpm, or you are using localy, you can ignore this warning"
+					"If you are not using pnpm, or you are using locally, you can ignore this warning"
 				)
 			end
 
@@ -118,14 +118,14 @@ function M.check()
 			else
 				vim.health.warn(
 					"Yarn Docker container name is not set.",
-					"If you are not using yarn, or you are using localy, you can ignore this warning"
+					"If you are not using yarn, or you are using locally, you can ignore this warning"
 				)
 			end
 
 			if count_of_containers == 0 then
-				vim.health.error("Docke config is detected without any container set.", {
+				vim.health.error("Docker config is detected without any container set.", {
 					"You have to set at least one of the supported package manager container names: composer_container_name, npm_container_name, pnpm_container_name, yarn_container_name",
-					"In case you wanna use from local, you have to remove docker config entirelly",
+					"In case you wanna use from local, you have to remove docker config entirely",
 				})
 
 				executable_managers()
