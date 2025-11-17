@@ -57,7 +57,18 @@ M.installed = function(package_config)
 
 	local installed = {}
 
+	local timeout_timer
+
 	local on_exit = function(job_id, code, event)
+		local ok, err = pcall(function()
+			timeout_timer:stop()
+			timeout_timer:close()
+		end)
+
+		if not ok then
+			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
+		end
+
 		if code ~= 0 then
 			logger.error("Command 'yarn list' failed with code: " .. code)
 
@@ -68,8 +79,6 @@ M.installed = function(package_config)
 		end
 
 		local json_str = table.concat(installed, "\n")
-
-		local ok
 
 		---@type table<{data: {trees: table<{name: string}>}}>
 		local result
@@ -122,7 +131,7 @@ M.installed = function(package_config)
 
 	is_installed_command_running = true
 
-	vim.fn.jobstart(installed_command, {
+	local job_id = vim.fn.jobstart(installed_command, {
 		stdout_buffered = true,
 		on_stdout = function(_, data)
 			if data then
@@ -135,6 +144,19 @@ M.installed = function(package_config)
 		end,
 		on_exit = on_exit,
 	})
+
+	if job_id <= 0 then
+		is_installed_command_running = false
+		spinner.hide()
+		logger.error("Failed to start job")
+		return
+	end
+
+	local timeout_seconds = common.get_timeout(package_config)
+	timeout_timer = common.start_job_timeout(job_id, timeout_seconds, "Yarn installed command", function()
+		is_installed_command_running = false
+		spinner.hide()
+	end)
 end
 
 ---@param package_config? PackageVersionConfig
@@ -159,12 +181,23 @@ M.outdated = function(package_config)
 
 	local color_config = common.get_default_color_config(package_config)
 
-	local latest_hl = common.latest_hl()
-	local wanted_hl = common.wanted_hl()
+	local latest_hl = common.latest_hl(color_config)
+	local wanted_hl = common.wanted_hl(color_config)
 
 	local outdated = {}
 
+	local timeout_timer
+
 	local on_exit = function(job_id, code, event)
+		local ok, err = pcall(function()
+			timeout_timer:stop()
+			timeout_timer:close()
+		end)
+
+		if not ok then
+			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
+		end
+
 		-- yarn outdated returns exit code 1 when outdated packages exist, which is expected
 		if code ~= 0 and code ~= 1 then
 			logger.error("Command 'yarn outdated' failed with code: " .. code)
@@ -176,8 +209,6 @@ M.outdated = function(package_config)
 		end
 
 		local json_str = table.concat(outdated, "\n")
-
-		local ok
 
 		---@type table<{data: { body: { [1]: string, [2]: string, [3]: string, [4]: string }[]}}>
 		local result
@@ -260,7 +291,7 @@ M.outdated = function(package_config)
 
 	is_outdated_command_running = true
 
-	vim.fn.jobstart(outdated_command, {
+	local job_id = vim.fn.jobstart(outdated_command, {
 		stdout_buffered = true,
 		on_stdout = function(_, data)
 			if data then
@@ -273,6 +304,19 @@ M.outdated = function(package_config)
 		end,
 		on_exit = on_exit,
 	})
+
+	if job_id <= 0 then
+		is_outdated_command_running = false
+		spinner.hide()
+		logger.error("Failed to start job")
+		return
+	end
+
+	local timeout_seconds = common.get_timeout(package_config)
+	timeout_timer = common.start_job_timeout(job_id, timeout_seconds, "Yarn outdated command", function()
+		is_outdated_command_running = false
+		spinner.hide()
+	end)
 end
 
 ---@param package_config? PackageVersionConfig
@@ -287,7 +331,18 @@ M.update_all = function(package_config)
 
 	is_update_all_command_running = true
 
+	local timeout_timer
+
 	local on_exit = function(job_id, code, event)
+		local ok, err = pcall(function()
+			timeout_timer:stop()
+			timeout_timer:close()
+		end)
+
+		if not ok then
+			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
+		end
+
 		if code ~= 0 then
 			logger.error("Yarn update all failed with code: " .. code)
 
@@ -312,10 +367,23 @@ M.update_all = function(package_config)
 
 	spinner.show(package_config and package_config.spinner)
 
-	vim.fn.jobstart(update_all_command, {
+	local job_id = vim.fn.jobstart(update_all_command, {
 		stdout_buffered = false,
 		on_exit = on_exit,
 	})
+
+	if job_id <= 0 then
+		is_update_all_command_running = false
+		spinner.hide()
+		logger.error("Failed to start job")
+		return
+	end
+
+	local timeout_seconds = common.get_timeout(package_config)
+	timeout_timer = common.start_job_timeout(job_id, timeout_seconds, "Yarn update all command", function()
+		is_update_all_command_running = false
+		spinner.hide()
+	end)
 end
 
 ---@param package_config? PackageVersionConfig
@@ -341,7 +409,18 @@ M.update_single = function(package_config)
 
 	is_update_single_command_running = true
 
+	local timeout_timer
+
 	local on_exit = function(job_id, code, event)
+		local ok, err = pcall(function()
+			timeout_timer:stop()
+			timeout_timer:close()
+		end)
+
+		if not ok then
+			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
+		end
+
 		if code ~= 0 then
 			logger.error("Command yarn upgrade " .. package_name .. " failed with code: " .. code)
 
@@ -366,10 +445,23 @@ M.update_single = function(package_config)
 
 	spinner.show(package_config and package_config.spinner)
 
-	vim.fn.jobstart(update_one_command, {
+	local job_id = vim.fn.jobstart(update_one_command, {
 		stdout_buffered = false,
 		on_exit = on_exit,
 	})
+
+	if job_id <= 0 then
+		is_update_single_command_running = false
+		spinner.hide()
+		logger.error("Failed to start job")
+		return
+	end
+
+	local timeout_seconds = common.get_timeout(package_config)
+	timeout_timer = common.start_job_timeout(job_id, timeout_seconds, "Yarn update single command", function()
+		is_update_single_command_running = false
+		spinner.hide()
+	end)
 end
 
 return M

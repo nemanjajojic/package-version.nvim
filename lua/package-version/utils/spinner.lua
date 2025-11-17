@@ -92,33 +92,31 @@ local spinner_window = nil
 
 ---@param spinner_config? SpinnerConfig
 function M.show(spinner_config)
-	local defaut_config = {
+	-- Window configuration defaults (not user-configurable)
+	local window_config = {
 		relative = "editor",
 		style = "minimal",
-		type = "space",
 		width = 29,
 		height = 1,
 		column = 1,
 		row = 0,
 	}
 
-	spinner_config = vim.tbl_extend("force", defaut_config, spinner_config or {})
-
 	spinner_buffer = vim.api.nvim_create_buf(false, true)
 	spinner_window = vim.api.nvim_open_win(spinner_buffer, false, {
-		relative = spinner_config.relative,
-		style = spinner_config.style,
-		width = spinner_config.width,
-		height = spinner_config.height,
-		col = vim.o.columns - spinner_config.column,
-		row = spinner_config.row,
+		relative = window_config.relative,
+		style = window_config.style,
+		width = window_config.width,
+		height = window_config.height,
+		col = vim.o.columns - window_config.column,
+		row = window_config.row,
 	})
 
-	local spinner_type = spinner_config.type
+	local spinner_type = spinner_config and spinner_config.type or "space"
 
 	local spinner_index = #config.spinner_frames[spinner_type]
 
-	spinner_timer = (vim.uv or vim.loop).new_timer()
+	spinner_timer = vim.uv.new_timer()
 
 	if not spinner_timer then
 		logger.error("Failed to create spinner timer")

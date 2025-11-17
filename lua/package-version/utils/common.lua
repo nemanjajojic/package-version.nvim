@@ -1,39 +1,59 @@
-local M = {
-	---@type ColorConfig
-	color_config = {
-		latest = "#a6e3a1",
-		wanted = "#f9e2af",
-		current = "Comment",
-		abandoned = "#eba0ac",
-	},
-}
+local M = {}
+local config_validator = require("package-version.config")
 
+---@param color_config ColorConfig
 ---@return string
-M.abandoned_hl = function()
+M.abandoned_hl = function(color_config)
 	local name = "Abandoned"
-	vim.api.nvim_set_hl(0, name, {
-		fg = M.color_config.abandoned,
-	})
+	local color = color_config.abandoned
+
+	if not color then
+		return name
+	end
+
+	if color:sub(1, 1) == "#" then
+		vim.api.nvim_set_hl(0, name, { fg = color })
+	else
+		vim.api.nvim_set_hl(0, name, { link = color })
+	end
 
 	return name
 end
 
+---@param color_config ColorConfig
 ---@return string
-M.latest_hl = function()
+M.latest_hl = function(color_config)
 	local name = "Latest"
-	vim.api.nvim_set_hl(0, name, {
-		fg = M.color_config.latest,
-	})
+	local color = color_config.latest
+
+	if not color then
+		return name
+	end
+
+	if color:sub(1, 1) == "#" then
+		vim.api.nvim_set_hl(0, name, { fg = color })
+	else
+		vim.api.nvim_set_hl(0, name, { link = color })
+	end
 
 	return name
 end
 
+---@param color_config ColorConfig
 ---@return string
-M.wanted_hl = function()
+M.wanted_hl = function(color_config)
 	local name = "Wanted"
-	vim.api.nvim_set_hl(0, name, {
-		fg = M.color_config.wanted,
-	})
+	local color = color_config.wanted
+
+	if not color then
+		return name
+	end
+
+	if color:sub(1, 1) == "#" then
+		vim.api.nvim_set_hl(0, name, { fg = color })
+	else
+		vim.api.nvim_set_hl(0, name, { link = color })
+	end
 
 	return name
 end
@@ -58,12 +78,12 @@ end
 ---@param package_config? PackageVersionConfig
 ---@return ColorConfig
 M.get_default_color_config = function(package_config)
-	---@type ColorConfig
-	local color = package_config and package_config.color or {}
+	if package_config and package_config.color then
+		return package_config.color
+	end
 
-	color = vim.tbl_extend("force", M.color_config, color)
-
-	return color
+	-- Fallback to default config
+	return config_validator.DEFAULT_CONFIG.color
 end
 
 ---@param package_config? PackageVersionConfig
@@ -89,6 +109,10 @@ M.get_package_name_from_line_json = function(line_content)
 	-- Match version starting with version range characters or digits
 	local package_name = line_content:match('"([^"]+)"%s*:%s*"[~^>=<*0-9][^"]*"')
 	if package_name then
+		-- Exclude "version" field (e.g., "version": "1.0.0")
+		if package_name == "version" then
+			return nil
+		end
 		return package_name
 	end
 
@@ -111,6 +135,37 @@ M.get_package_name_from_line_json = function(line_content)
 	end
 
 	return nil
+end
+
+---@param package_config? PackageVersionConfig
+---@return number timeout_seconds
+M.get_timeout = function(package_config)
+	if package_config and package_config.timeout then
+		return package_config.timeout
+	end
+
+	return config_validator.DEFAULT_CONFIG.timeout
+end
+
+---@param job_id number The job ID returned by vim.fn.jobstart
+---@param timeout_seconds number Timeout in seconds
+---@param command_name string Name of the command for error messages
+---@param on_timeout fun() Callback to execute on timeout (should reset guard flag and hide spinner)
+---@return TimeoutTimer timer The timer object (must be stopped/closed in on_exit)
+M.start_job_timeout = function(job_id, timeout_seconds, command_name, on_timeout)
+	local logger = require("package-version.utils.logger")
+	local timeout_timer = vim.uv.new_timer()
+
+	timeout_timer:start(timeout_seconds * 1000, 0, function()
+		vim.schedule(function()
+			on_timeout()
+			logger.error(string.format("%s timeout after %d seconds", command_name, timeout_seconds))
+		end)
+
+		pcall(vim.fn.jobstop, job_id)
+	end)
+
+	return timeout_timer
 end
 
 return M

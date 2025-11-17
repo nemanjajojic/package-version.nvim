@@ -10,6 +10,16 @@
 [![Yarn](https://img.shields.io/badge/yarn-%232C8EBB.svg?style=for-the-badge&logo=yarn&logoColor=white)](https://yarnpkg.com/)
 [![PNPM](https://img.shields.io/badge/pnpm-%234a4a4a.svg?style=for-the-badge&logo=pnpm&logoColor=f69220)](https://pnpm.io)
 
+## 📋 Requirements
+
+- **Neovim:** 0.10.0 or higher
+- **Package Manager:** At least one of the following installed:
+- npm (Node.js)
+  - yarn
+  - pnpm
+- Composer (PHP)
+- **Optional:** Docker (for containerized package management)
+
 ## The Problem
 
 Imagine this: you’re in Neovim, and you want to keep an eye on your
@@ -97,6 +107,7 @@ config = function()
         spinner = {
             type = "pacman" | "ball" | "space" | "minimal" | "dino"
         },
+        timeout = 60, -- Command timeout in seconds (default: 60, max: 300)
         docker = {
             composer_container_name = "your_composer_container_name",
             npm_container_name = "your_npm_container_name",
@@ -114,7 +125,20 @@ In order to align plugin with color scheme of your choice,
 you should should customize this config according to your preferences.
 
 > [!NOTE]
-> You can use hexadecimal color codes eg. `#FF5733`
+> You can use **hexadecimal color codes** (e.g., `#FF5733`)
+> or **Neovim highlight group names** (e.g., `Comment`, `String`, `Error`).
+> Using **Neovim highlight group names** will be more adaptive to changing themes
+
+**Examples:**
+
+```lua
+color = {
+    latest = "#a6e3a1",      -- Hex color (catppuccin green)
+    wanted = "#f9e2af",      -- Hex color (catppuccin yellow)
+    current = "Comment",     -- Neovim highlight group
+    abandoned = "ErrorMsg",  -- Neovim highlight group
+}
+```
 
 - `latest`- latest version available
 - `wanted` - latest available version that matches semver range
@@ -130,6 +154,28 @@ to provide better user experience, while background task is running.
 > `space` is default spinner type.
 
 You have couple of options to choose from. Please check [SPINNERS.md](SPINNERS.md)
+
+### Timeout options
+
+All commands (installed, outdated, update) have a built-in timeout protection
+to prevent hung operations.
+
+- **Default:** 60 seconds
+- **Range:** 1 - 300 seconds (5 minutes max)
+- **Behavior:** If a command exceeds the timeout, it will be automatically
+stopped and an error message will be shown
+
+**Example:**
+
+```lua
+require("package-version").setup({
+    timeout = 60,
+})
+```
+
+> [!NOTE]
+> If you have a lot of private packages or slow network connections,
+> you may want to increase the timeout value.
 
 ### Docker and local environment
 
@@ -158,6 +204,25 @@ In case you wanna use local installation of package manager,
 
 Run `:checkhealth package-version` command to check if plugin is properly
 configured and have everything need to work properly.
+
+The health check validates:
+
+- **Configuration** - Verifies your setup configuration is valid
+- **Package Manager Availability** - Ensures required package managers or Docker are available
+
+### Common Health Check Scenarios
+
+**Docker Mode:**
+
+- If you configure `docker` option, Docker must be installed on your system
+- At least one container must be configured
+- ❌ ERROR if docker config is set but docker is not installed
+
+**Local Mode:**
+
+- If no `docker` option is configured, at least one package manager must be in your PATH
+- ❌ ERROR if no docker config AND no local package managers are found
+- ✅ OK if at least one package manager (composer, npm, pnpm, or yarn) is available
 
 ## 🙏 Honorable Mentions
 
