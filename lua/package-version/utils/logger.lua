@@ -1,25 +1,29 @@
 local M = {}
 
-local title = { title = "package-version.nvim" }
+local title = { title = "package-version.nvim", icon = "📦", timeout = 3000 }
+
+local notify = function(message, level)
+	vim.notify(message, level, title)
+end
 
 ---@param message string
 M.debug = function(message)
-	vim.notify(message, vim.log.levels.DEBUG, title)
+	notify(message, vim.log.levels.DEBUG)
 end
 
 ---@param message string
 M.info = function(message)
-	vim.notify(message, vim.log.levels.INFO, title)
+	notify(message, vim.log.levels.INFO)
 end
 
 ---@param message string
 M.warning = function(message)
-	vim.notify(message, vim.log.levels.WARN, title)
+	notify(message, vim.log.levels.WARN)
 end
 
 ---@param message string
 M.error = function(message)
-	vim.notify(message, vim.log.levels.ERROR, title)
+	notify(message, vim.log.levels.ERROR)
 end
 
 return M

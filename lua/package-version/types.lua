@@ -2,6 +2,7 @@
 ---@field color? ColorConfig
 ---@field spinner? SpinnerConfig
 ---@field docker? DockerConfig
+---@field timeout? number
 ---
 ---@class ColorConfig
 ---@field wanted? string
@@ -10,16 +11,14 @@
 ---@field abandoned? string
 ---
 ---@class SpinnerConfig
----@field relative? string
 ---@field type? "pacman" | "ball" | "space" | "minimal" | "dino"
----@field style? string
----@field width? integer
----@field height? integer
----@field column? integer
----@field row? integer
 ---
 ---@class DockerConfig
 ---@field composer_container_name? string
 ---@field npm_container_name? string
 ---@field yarn_container_name? string
 ---@field pnpm_container_name? string
+
+---@class TimeoutTimer
+---@field stop fun()
+---@field close fun()

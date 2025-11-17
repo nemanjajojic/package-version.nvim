@@ -6,14 +6,12 @@ local yarn = require("package-version.package-manager.yarn")
 local pnpm = require("package-version.package-manager.pnpm")
 local logger = require("package-version.utils.logger")
 
--- File name constants
 local COMPOSER_JSON_FILE_NAME = "composer.json"
 local PACKAGE_JSON_FILE_NAME = "package.json"
 local NPM_LOCK_FILE_NAME = "package-lock.json"
 local YARN_LOCK_FILE_NAME = "yarn.lock"
 local PNPM_LOCK_FILE_NAME = "pnpm-lock.yaml"
 
--- Package manager name constants
 local PACKAGE_MANAGER_NPM = "npm"
 local PACKAGE_MANAGER_YARN = "yarn"
 local PACKAGE_MANAGER_PNPM = "pnpm"
@@ -23,7 +21,7 @@ local PACKAGE_MANAGER_PNPM = "pnpm"
 local has_file = function(file_name)
 	local file_path = vim.fs.joinpath(vim.fn.getcwd(), file_name)
 
-	local stat = (vim.uv or vim.loop).fs_stat(file_path)
+	local stat = vim.uv.fs_stat(file_path)
 
 	return stat and stat.type == "file"
 end
@@ -42,15 +40,18 @@ end
 ---@return string|nil package_manager ("npm"|"yarn"|"pnpm")
 local detect_package_manager = function()
 	if has_file(NPM_LOCK_FILE_NAME) and (has_file(YARN_LOCK_FILE_NAME) or has_file(PNPM_LOCK_FILE_NAME)) then
-		return "package-lock.json cannot coexist with yarn.lock or pnpm-lock.yaml. Please keep only one to avoid conflicts.", nil
+		return "package-lock.json cannot coexist with yarn.lock or pnpm-lock.yaml. Please keep only one to avoid conflicts.",
+			nil
 	end
 
 	if has_file(YARN_LOCK_FILE_NAME) and (has_file(NPM_LOCK_FILE_NAME) or has_file(PNPM_LOCK_FILE_NAME)) then
-		return "yarn.lock cannot coexist with package-lock.json or pnpm-lock.yaml. Please keep only one to avoid conflicts.", nil
+		return "yarn.lock cannot coexist with package-lock.json or pnpm-lock.yaml. Please keep only one to avoid conflicts.",
+			nil
 	end
 
 	if has_file(PNPM_LOCK_FILE_NAME) and (has_file(NPM_LOCK_FILE_NAME) or has_file(YARN_LOCK_FILE_NAME)) then
-		return "pnpm-lock.yaml cannot coexist with package-lock.json or yarn.lock. Please keep only one to avoid conflicts.", nil
+		return "pnpm-lock.yaml cannot coexist with package-lock.json or yarn.lock. Please keep only one to avoid conflicts.",
+			nil
 	end
 
 	if has_file(NPM_LOCK_FILE_NAME) then
