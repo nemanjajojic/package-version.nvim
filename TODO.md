@@ -12,7 +12,7 @@
 - [x] Update single package
 - [x] Add health check command
 - [x] Implement mutex pattern to avoid re-execution of commands
-- [] Add list of all updated packages after update all command
-- [] Cache command results for better performance
-- [] Add tests
-- [] Support PyPi
+- [ ] Add list of all updated packages after update all command
+- [ ] Cache command results for better performance
+- [ ] Add tests
+- [ ] Support PyPi
