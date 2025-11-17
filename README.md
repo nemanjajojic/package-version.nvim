@@ -47,15 +47,25 @@ Install plugin using package manager of your choice, for example with
 
 ## 💻 Commands
 
-You have two commands available:
+You have the following commands available:
+
+### Package Information
 
 - `:PackageVersionInstalled` - toggle installed package version
 - `:PackageVersionOutdated` - toggle outdated package version
+
+### Package Updates
+
 - `:PackageVersionUpdateAll` - update all outdated packages to latest version according to semver range
-- `:PackageVersionUpdateSingle` - update single package to latest version according to semver range.
+- `:PackageVersionUpdateSingle` - update single package to latest version according to semver range
 
 > [!IMPORTANT]
 > `PackageVersionUpdateSingle` command will try to update package under cursor
+
+### Cache Management
+
+- `:PackageVersionClearCache` - clear all cached package data
+- `:PackageVersionCacheStats` - show cache statistics (list of cache keys with expiration status)
 
 ## ⌨️ Mappings
 
@@ -107,7 +117,30 @@ config = function()
         spinner = {
             type = "pacman" | "ball" | "space" | "minimal" | "dino"
         },
-        timeout = 60, -- Command timeout in seconds (default: 60, max: 300)
+        -- Command timeout in seconds (default: 60, max: 300)
+        timeout = 60
+        cache = {
+            -- Enable caching (default: true)
+            enabled = true
+            ttl = {
+                -- Cache duration for installed packages in seconds (default: 300 / 5 minutes)
+                installed = 300,
+                -- Cache duration for outdated packages in seconds (default: 300 / 5 minutes)
+                outdated = 300,
+            },
+            warmup = {
+                -- Debounce warmup triggers in milliseconds (default: 500)
+                debounce_ms = 500,
+                ttl = {
+                    -- Warmup cache duration for installed packages (default: 3600 / 1 hour)
+                    -- Set to 0 to disable warmup for installed packages
+                    installed = 3600,
+                    -- Warmup cache duration for outdated packages (default: 3600 / 1 hour)
+                    -- Set to 0 to disable warmup for outdated packages
+                    outdated = 3600,
+                }
+            }
+        },
         docker = {
             composer_container_name = "your_composer_container_name",
             npm_container_name = "your_npm_container_name",
@@ -176,6 +209,80 @@ require("package-version").setup({
 > [!NOTE]
 > If you have a lot of private packages or slow network connections,
 > you may want to increase the timeout value.
+
+### Cache options
+
+The plugin includes caching system to improve performance and
+reduce unnecessary package manager calls.
+
+- **Default:** Enabled with 5 minute TTL
+- **TTL Range:** 0 - 3600 seconds (1 hour max)
+
+**Example:**
+
+```lua
+require("package-version").setup({
+    cache = {
+        enabled = true,  -- Enable/disable caching system
+        ttl = {
+            installed = 300,  -- Cache installed packages for 5 minutes
+            outdated = 300,   -- Cache outdated packages for 5 minutes
+        }
+    }
+})
+```
+
+> [!TIP]
+>
+> - Set `ttl = 0` to disable caching for specific operations
+> - Use `:PackageVersionClearCache` to manually clear all cached data
+> - Use `:PackageVersionCacheStats` to view cache statistics
+
+> [!NOTE]
+> If you frequently update packages outside of Neovim, you may want to
+> reduce the TTL value or disable caching to ensure fresh data.
+
+### Cache Warmup
+
+The plugin includes an automatic cache warmup feature that pre-populates the cache
+when you open package files (`package.json`, `composer.json`). This provides **instant
+results** when you run commands, without the wait!
+
+> [!TIP]
+> **Warmup respects the main `cache.enabled` flag.** If caching is disabled, warmup will not run.
+> To disable only warmup (keeping manual cache), set the warmup TTL values to 0.
+
+**Example**
+
+```lua
+require("package-version").setup({
+    cache = {
+        warmup = {
+            debounce_ms = 500,  -- Wait time before triggering warmup (default: 500)
+            ttl = {
+                installed = 3600, -- Warmup cache duration (default: 3600 / 1 hour), set to 0 to disable
+                outdated = 3600,  -- Warmup cache duration (default: 3600 / 1 hour), set to 0 to disable
+            }
+        }
+    }
+})
+```
+
+**Warmup TTL Settings:**
+
+- **Range:** 0 - 86400 seconds (24 hours max)
+- **Default:** 3600 seconds (1 hour)
+- **Set to 0 to disable warmup**
+- **Recommended:**
+  - `0` - Disable warmup entirely
+  - `300` (5 min) - Fast-paced development with frequent dependency changes
+  - `900` (15 min) - Active development with occasional changes
+  - `3600` (1 hour) - Balanced (default) ⭐
+  - `7200` (2 hours) - Stable projects with rare dependency changes
+
+> [!TIP]
+> The warmup TTL is separate from manual command TTL. User commands always fetch fresh data
+> (5 min cache), while warmup uses a longer cache (1 hour) to minimize API calls.
 
 ### Docker and local environment
 

@@ -20,6 +20,20 @@ local DEFAULT_CONFIG = {
 	},
 	docker = nil,
 	timeout = 60,
+	cache = {
+		enabled = true,
+		ttl = {
+			installed = 300, -- 5 minutes
+			outdated = 300, -- 5 minutes
+		},
+		warmup = {
+			debounce_ms = 500, -- 500 milliseconds
+			ttl = {
+				installed = 3600, -- 1 hour
+				outdated = 3600, -- 1 hour
+			},
+		},
+	},
 }
 
 ---@param color any
@@ -182,9 +196,128 @@ local function validate_timeout(timeout)
 	return true
 end
 
----@param config? PackageVersionConfig
----@return true, PackageVersionConfig
----@overload fun(config?: PackageVersionConfig): false, string
+---@param cache_config any
+---@return boolean success
+---@return string? error_message
+local function validate_cache_config(cache_config)
+	if not cache_config then
+		return true
+	end
+
+	if type(cache_config) ~= "table" then
+		return false, "cache config must be a table"
+	end
+
+	if cache_config.enabled ~= nil and type(cache_config.enabled) ~= "boolean" then
+		return false, "cache.enabled must be a boolean"
+	end
+
+	if cache_config.ttl ~= nil then
+		if type(cache_config.ttl) ~= "table" then
+			return false, "cache.ttl must be a table"
+		end
+
+		local valid_ttl_fields = { "installed", "outdated" }
+		for key, value in pairs(cache_config.ttl) do
+			if not vim.tbl_contains(valid_ttl_fields, key) then
+				return false,
+					string.format(
+						"Unknown cache.ttl field: '%s'. Valid fields are: %s",
+						key,
+						table.concat(valid_ttl_fields, ", ")
+					)
+			end
+
+			if type(value) ~= "number" then
+				return false, string.format("cache.ttl.%s must be a number (seconds)", key)
+			end
+
+			if value < 0 then
+				return false, string.format("cache.ttl.%s must be >= 0", key)
+			end
+
+			if value > 3600 then
+				return false, string.format("cache.ttl.%s must be <= 3600 seconds (1 hour)", key)
+			end
+		end
+	end
+
+	if cache_config.warmup ~= nil then
+		if type(cache_config.warmup) ~= "table" then
+			return false, "cache.warmup must be a table"
+		end
+
+		if cache_config.warmup.debounce_ms ~= nil then
+			if type(cache_config.warmup.debounce_ms) ~= "number" then
+				return false, "cache.warmup.debounce_ms must be a number (milliseconds)"
+			end
+
+			if cache_config.warmup.debounce_ms < 0 then
+				return false, "cache.warmup.debounce_ms must be >= 0"
+			end
+
+			if cache_config.warmup.debounce_ms > 10000 then
+				return false, "cache.warmup.debounce_ms must be <= 10000 (10 seconds)"
+			end
+		end
+
+		if cache_config.warmup.ttl ~= nil then
+			if type(cache_config.warmup.ttl) ~= "table" then
+				return false, "cache.warmup.ttl must be a table"
+			end
+
+			local valid_warmup_ttl_fields = { "installed", "outdated" }
+			for key, value in pairs(cache_config.warmup.ttl) do
+				if not vim.tbl_contains(valid_warmup_ttl_fields, key) then
+					return false,
+						string.format(
+							"Unknown cache.warmup.ttl field: '%s'. Valid fields are: %s",
+							key,
+							table.concat(valid_warmup_ttl_fields, ", ")
+						)
+				end
+
+				if type(value) ~= "number" then
+					return false, string.format("cache.warmup.ttl.%s must be a number (seconds)", key)
+				end
+
+				if value < 0 then
+					return false, string.format("cache.warmup.ttl.%s must be >= 0", key)
+				end
+
+				if value > 86400 then
+					return false, string.format("cache.warmup.ttl.%s must be <= 86400 seconds (24 hours)", key)
+				end
+			end
+		end
+
+		local valid_warmup_fields = { "debounce_ms", "ttl" }
+		for key in pairs(cache_config.warmup) do
+			if not vim.tbl_contains(valid_warmup_fields, key) then
+				return false,
+					string.format(
+						"Unknown cache.warmup field: '%s'. Valid fields are: %s",
+						key,
+						table.concat(valid_warmup_fields, ", ")
+					)
+			end
+		end
+	end
+
+	local valid_fields = { "enabled", "ttl", "warmup" }
+	for key in pairs(cache_config) do
+		if not vim.tbl_contains(valid_fields, key) then
+			return false,
+				string.format("Unknown cache field: '%s'. Valid fields are: %s", key, table.concat(valid_fields, ", "))
+		end
+	end
+
+	return true
+end
+
+---@param config? PackageVersionUserConfig
+---@return true, PackageVersionValidatedConfig
+---@overload fun(config?: PackageVersionUserConfig): false, string
 function M.validate(config)
 	if config == nil then
 		return true, DEFAULT_CONFIG
@@ -214,7 +347,12 @@ function M.validate(config)
 		return false, "Invalid timeout config: " .. err
 	end
 
-	local valid_top_level = { "color", "spinner", "docker", "timeout" }
+	ok, err = validate_cache_config(config.cache)
+	if not ok then
+		return false, "Invalid cache config: " .. err
+	end
+
+	local valid_top_level = { "color", "spinner", "docker", "timeout", "cache" }
 	for key in pairs(config) do
 		if not vim.tbl_contains(valid_top_level, key) then
 			return false,
@@ -226,7 +364,9 @@ function M.validate(config)
 		end
 	end
 
-	local merged = vim.tbl_deep_extend("force", DEFAULT_CONFIG, config)
+	---@type PackageVersionValidatedConfig
+	---@diagnostic disable-next-line: assign-type-mismatch
+	local merged = vim.tbl_deep_extend("keep", config or {}, DEFAULT_CONFIG)
 
 	return true, merged
 end

@@ -11,8 +11,10 @@
 - [x] Update all packages
 - [x] Update single package
 - [x] Add health check command
-- [x] Implement mutex pattern to avoid re-execution of commands
+- [x] Implement global mutex pattern to avoid re-execution of commands
+- [x] Cache command results for better performance
+- [x] Cache warm on BufEnter with debounce functionality
+- [x] Add command to clear cache and to see cache status
 - [ ] Add list of all updated packages after update all command
-- [ ] Cache command results for better performance
 - [ ] Add tests
 - [ ] Support PyPi

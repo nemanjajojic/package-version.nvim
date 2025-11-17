@@ -90,9 +90,8 @@ local spinner_timer = nil
 local spinner_buffer = nil
 local spinner_window = nil
 
----@param spinner_config? SpinnerConfig
+---@param spinner_config? SpinnerValidatedConfig
 function M.show(spinner_config)
-	-- Window configuration defaults (not user-configurable)
 	local window_config = {
 		relative = "editor",
 		style = "minimal",
