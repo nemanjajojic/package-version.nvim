@@ -80,8 +80,6 @@ M.installed = function(package_config)
 
 		local json_str = table.concat(installed, "\n")
 
-		local ok
-
 		---@type table<{dependencies: table<string, {version: string}>, devDependencies: table<string, {version: string}>}>
 		local result
 
@@ -346,7 +344,7 @@ M.update_all = function(package_config)
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local update_all_command = prepare_command("pnpm update --no-audit --silent", docker_config)
+	local update_all_command = prepare_command("pnpm update", docker_config)
 
 	if not update_all_command then
 		return

@@ -198,6 +198,12 @@ M.outdated = function(package_config)
 			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
 		end
 
+		if code == 0 then
+			spinner.hide("No outdated packages!")
+			is_outdated_command_running = false
+			return
+		end
+
 		-- yarn outdated returns exit code 1 when outdated packages exist, which is expected
 		if code ~= 0 and code ~= 1 then
 			logger.error("Command 'yarn outdated' failed with code: " .. code)

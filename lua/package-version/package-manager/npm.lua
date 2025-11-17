@@ -59,7 +59,7 @@ M.installed = function(package_config)
 
 	local timeout_timer
 
-	local on_exit = function(code)
+	local on_exit = function(job_id, code, event)
 		local ok, err = pcall(function()
 			timeout_timer:stop()
 			timeout_timer:close()
@@ -177,7 +177,7 @@ M.outdated = function(package_config)
 
 	local timeout_timer
 
-	local on_exit = function(code)
+	local on_exit = function(job_id, code, event)
 		local ok, err = pcall(function()
 			timeout_timer:stop()
 			timeout_timer:close()
@@ -185,6 +185,12 @@ M.outdated = function(package_config)
 
 		if not ok then
 			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
+		end
+
+		if code == 0 then
+			spinner.hide("No outdated packages!")
+			is_outdated_command_running = false
+			return
 		end
 
 		-- npm outdated returns exit code 1 when outdated packages exist, which is expected
