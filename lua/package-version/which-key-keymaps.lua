@@ -1,8 +1,8 @@
 local M = {}
 
-local strategy = require("package-version.package-manager.strategy")
+local strategy = require("package-version.strategy")
 
----@param config? PackageVersionConfig
+---@param config PackageVersionValidatedConfig
 M.register_which_keys = function(config)
 	local which_key = require("which-key")
 

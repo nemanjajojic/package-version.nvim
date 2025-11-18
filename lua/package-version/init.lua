@@ -1,19 +1,19 @@
 local M = {
-	---@type PackageVersionConfig
 	config = {},
 }
 local command = require("package-version.command")
 local which_key_keymaps = require("package-version.which-key-keymaps")
 local config_validator = require("package-version.config")
+local warmup = require("package-version.cache.warmup")
 
----@param config? PackageVersionConfig
+---@param config? PackageVersionUserConfig
 function M.setup(config)
 	local ok, result = config_validator.validate(config)
 
-	---@type PackageVersionConfig
+	---@type PackageVersionValidatedConfig
 	local validated_config
 	if ok then
-		---@cast result PackageVersionConfig
+		---@cast result PackageVersionValidatedConfig
 		validated_config = result
 	else
 		validated_config = config_validator.DEFAULT_CONFIG
@@ -28,6 +28,8 @@ function M.setup(config)
 	end
 
 	command.register_commands(validated_config)
+
+	warmup.run_warmap(validated_config)
 end
 
 return M

@@ -1,7 +1,7 @@
 local M = {}
 local config_validator = require("package-version.config")
 
----@param color_config ColorConfig
+---@param color_config ColorValidatedConfig
 ---@return string
 M.abandoned_hl = function(color_config)
 	local name = "Abandoned"
@@ -20,7 +20,7 @@ M.abandoned_hl = function(color_config)
 	return name
 end
 
----@param color_config ColorConfig
+---@param color_config ColorValidatedConfig
 ---@return string
 M.latest_hl = function(color_config)
 	local name = "Latest"
@@ -39,7 +39,7 @@ M.latest_hl = function(color_config)
 	return name
 end
 
----@param color_config ColorConfig
+---@param color_config ColorValidatedConfig
 ---@return string
 M.wanted_hl = function(color_config)
 	local name = "Wanted"
@@ -67,7 +67,7 @@ M.set_virtual_text = function(line_number, package_version, namespace_id, icon, 
 	vim.api.nvim_buf_set_extmark(0, namespace_id, line_number - 1, 0, {
 		virt_text = {
 			{
-				" " .. icon .. " " .. package_version .. " ",
+				string.format(" %s %s ", icon, package_version),
 				style,
 			},
 		},
@@ -75,28 +75,16 @@ M.set_virtual_text = function(line_number, package_version, namespace_id, icon, 
 	})
 end
 
----@param package_config? PackageVersionConfig
----@return ColorConfig
+---@param package_config PackageVersionValidatedConfig
+---@return ColorValidatedConfig
 M.get_default_color_config = function(package_config)
-	if package_config and package_config.color then
-		return package_config.color
-	end
-
-	-- Fallback to default config
-	return config_validator.DEFAULT_CONFIG.color
+	return package_config.color
 end
 
----@param package_config? PackageVersionConfig
----@return DockerConfig|nil
+---@param package_config PackageVersionValidatedConfig
+---@return DockerValidatedConfig?
 M.get_docker_config = function(package_config)
-	---@type DockerConfig|nil
-	local docker_config = package_config and package_config.docker or nil
-
-	if docker_config == nil then
-		return nil
-	end
-
-	return docker_config
+	return package_config.docker
 end
 
 ---@param line_content string
@@ -137,14 +125,10 @@ M.get_package_name_from_line_json = function(line_content)
 	return nil
 end
 
----@param package_config? PackageVersionConfig
+---@param package_config PackageVersionValidatedConfig
 ---@return number timeout_seconds
 M.get_timeout = function(package_config)
-	if package_config and package_config.timeout then
-		return package_config.timeout
-	end
-
-	return config_validator.DEFAULT_CONFIG.timeout
+	return package_config.timeout
 end
 
 ---@param job_id number The job ID returned by vim.fn.jobstart
