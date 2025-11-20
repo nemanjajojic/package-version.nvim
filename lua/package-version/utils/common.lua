@@ -1,5 +1,4 @@
 local M = {}
-local config_validator = require("package-version.config")
 
 ---@param color_config ColorValidatedConfig
 ---@return string

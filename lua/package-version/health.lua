@@ -1,3 +1,5 @@
+local const = require("package-version.utils.const")
+
 local M = {}
 
 ---@return integer count
@@ -96,11 +98,42 @@ function M.check()
 		vim.health.info(string.format("  installed TTL: %d seconds", installed_ttl))
 		vim.health.info(string.format("  outdated TTL: %d seconds", outdated_ttl))
 
-		if installed_ttl < 0 or installed_ttl > 3600 then
-			vim.health.warn(string.format("installed TTL (%d) is outside recommended range (0-3600)", installed_ttl))
+		if installed_ttl < const.LIMITS.CACHE_TTL_MIN or installed_ttl > const.LIMITS.CACHE_TTL_MAX then
+			vim.health.warn(string.format("installed TTL (%d) is outside recommended range (%d-%d)", installed_ttl, const.LIMITS.CACHE_TTL_MIN, const.LIMITS.CACHE_TTL_MAX))
 		end
-		if outdated_ttl < 0 or outdated_ttl > 3600 then
-			vim.health.warn(string.format("outdated TTL (%d) is outside recommended range (0-3600)", outdated_ttl))
+		if outdated_ttl < const.LIMITS.CACHE_TTL_MIN or outdated_ttl > const.LIMITS.CACHE_TTL_MAX then
+			vim.health.warn(string.format("outdated TTL (%d) is outside recommended range (%d-%d)", outdated_ttl, const.LIMITS.CACHE_TTL_MIN, const.LIMITS.CACHE_TTL_MAX))
+		end
+
+		-- Warmup configuration
+		local warmup_installed_ttl = plugin.config.cache.warmup.ttl.installed
+		local warmup_outdated_ttl = plugin.config.cache.warmup.ttl.outdated
+		local warmup_enabled = warmup_installed_ttl > 0 or warmup_outdated_ttl > 0
+
+		if warmup_enabled then
+			vim.health.ok("Cache warmup: enabled")
+			vim.health.info(string.format("  installed warmup TTL: %d seconds", warmup_installed_ttl))
+			vim.health.info(string.format("  outdated warmup TTL: %d seconds", warmup_outdated_ttl))
+			
+			local debounce_ms = plugin.config.cache.warmup.debounce_ms
+			local actual_debounce = debounce_ms
+			if plugin.config.cache.warmup.enable_code_files and debounce_ms < const.LIMITS.WARMUP_DEBOUNCE_CODE_FILES_MIN then
+				actual_debounce = const.LIMITS.WARMUP_DEBOUNCE_CODE_FILES_MIN
+			end
+			
+			if actual_debounce ~= debounce_ms then
+				vim.health.info(string.format("  debounce: %d ms (overridden to %d ms for code files)", debounce_ms, actual_debounce))
+			else
+				vim.health.info(string.format("  debounce: %d ms", debounce_ms))
+			end
+
+			if plugin.config.cache.warmup.enable_code_files then
+				vim.health.info("  warmup triggers: package files + code files (*.js, *.ts, *.php, etc.)")
+			else
+				vim.health.info("  warmup triggers: package files only (package.json, composer.json, lock files)")
+			end
+		else
+			vim.health.info("Cache warmup: disabled (all warmup TTLs set to 0)")
 		end
 	else
 		vim.health.info("Cache: disabled")

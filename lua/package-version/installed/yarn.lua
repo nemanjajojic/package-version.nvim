@@ -131,7 +131,7 @@ M.run_async = function(package_config)
 		end
 
 		if cache.is_enabled(cache_config) then
-			local ttl = cache.get_ttl(cache_config, "installed")
+			local ttl = cache.get_ttl(cache_config, cache.OPERATION.INSTALLED)
 
 			cache.set(cache.PACKAGE_MANAGER.YARN, cache.OPERATION.INSTALLED, packages, ttl)
 		end
@@ -204,7 +204,7 @@ M.warmup_cache = function(package_config)
 		return
 	end
 
-	local warmup_ttl = get_warmup_ttl(cache_config, "installed")
+	local warmup_ttl = get_warmup_ttl(cache_config, cache.OPERATION.INSTALLED)
 
 	-- Check if warmup is disabled (TTL = 0)
 	if warmup_ttl == 0 then
@@ -259,7 +259,7 @@ M.warmup_cache = function(package_config)
 				}
 			end
 
-			warmup_ttl = get_warmup_ttl(cache_config, "installed")
+			warmup_ttl = get_warmup_ttl(cache_config, cache.OPERATION.INSTALLED)
 
 			cache.set(cache.PACKAGE_MANAGER.YARN, cache.OPERATION.INSTALLED, packages, warmup_ttl)
 		end,

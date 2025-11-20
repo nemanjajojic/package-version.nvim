@@ -53,6 +53,7 @@ You have the following commands available:
 
 - `:PackageVersionInstalled` - toggle installed package version
 - `:PackageVersionOutdated` - toggle outdated package version
+- `:PackageVersionHomepage` - open package homepage or repository in browser
 
 ### Package Updates
 
@@ -61,6 +62,8 @@ You have the following commands available:
 
 > [!IMPORTANT]
 > `PackageVersionUpdateSingle` command will try to update package under cursor
+>
+> `PackageVersionHomepage` command will try to open the homepage URL for the package under cursor. If homepage is not available, it falls back to the repository URL (if browser-friendly).
 
 ### Cache Management
 
@@ -72,10 +75,18 @@ You have the following commands available:
 If you already using `which-key`, you can use default keybinding
 provided by plugin.
 
+### Package Operations
+
 - `<leader>vi` - toggle installed package version
 - `<leader>vo` - toggle outdated package version
+- `<leader>vh` - open package homepage/repository in browser
 - `<leader>vu` - update all outdated packages according to semver range
 - `<leader>vs` - update single package according to semver range
+
+### Cache Management
+
+- `<leader>vcc` - clear all cached package data
+- `<leader>vcs` - show cache statistics
 
 > [!IMPORTANT]
 > If you are not using `which-key`, you can set keybindings to your preference eg.
@@ -138,7 +149,10 @@ config = function()
                     -- Warmup cache duration for outdated packages (default: 3600 / 1 hour)
                     -- Set to 0 to disable warmup for outdated packages
                     outdated = 3600,
-                }
+                },
+                -- Enable warmup on code files (*.js, *.ts, *.php, etc.)
+                -- Default: false (only triggers on package files)
+                enable_code_files = false,
             }
         },
         docker = {
@@ -235,8 +249,6 @@ require("package-version").setup({
 > [!TIP]
 >
 > - Set `ttl = 0` to disable caching for specific operations
-> - Use `:PackageVersionClearCache` to manually clear all cached data
-> - Use `:PackageVersionCacheStats` to view cache statistics
 
 > [!NOTE]
 > If you frequently update packages outside of Neovim, you may want to
@@ -245,8 +257,24 @@ require("package-version").setup({
 ### Cache Warmup
 
 The plugin includes an automatic cache warmup feature that pre-populates the cache
-when you open package files (`package.json`, `composer.json`). This provides **instant
-results** when you run commands, without the wait!
+when you open package files. This provides **instant results** when you run commands,
+without the wait!
+
+**Warmup Triggers (by default):**
+
+- Package manifests: `package.json`, `composer.json`
+- Lock files: `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `composer.lock`
+
+**Optional: Warmup on Code Files**
+
+You can enable warmup triggers on code files (`.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.php`)
+by setting `cache.warmup.enable_code_files = true`. This is **opt-in** because it's more
+aggressive and may not be needed for all workflows.
+
+> [!NOTE]
+> When `enable_code_files = true`, the debounce time is automatically increased to a minimum of 
+> **5 seconds** (regardless of `debounce_ms` setting) to prevent excessive warmup triggers when 
+> rapidly switching between code files.
 
 > [!TIP]
 > **Warmup respects the main `cache.enabled` flag.** If caching is disabled, warmup will not run.
@@ -259,10 +287,12 @@ require("package-version").setup({
     cache = {
         warmup = {
             debounce_ms = 500,  -- Wait time before triggering warmup (default: 500)
+                                -- Note: Automatically increased to 5000ms when enable_code_files = true
             ttl = {
                 installed = 3600, -- Warmup cache duration (default: 3600 / 1 hour), set to 0 to disable
                 outdated = 3600,  -- Warmup cache duration (default: 3600 / 1 hour), set to 0 to disable
-            }
+            },
+            enable_code_files = false,  -- Enable warmup on *.js, *.ts, *.php, etc. (default: false)
         }
     }
 })
@@ -273,12 +303,6 @@ require("package-version").setup({
 - **Range:** 0 - 86400 seconds (24 hours max)
 - **Default:** 3600 seconds (1 hour)
 - **Set to 0 to disable warmup**
-- **Recommended:**
-  - `0` - Disable warmup entirely
-  - `300` (5 min) - Fast-paced development with frequent dependency changes
-  - `900` (15 min) - Active development with occasional changes
-  - `3600` (1 hour) - Balanced (default) ⭐
-  - `7200` (2 hours) - Stable projects with rare dependency changes
 
 > [!TIP]
 > The warmup TTL is separate from manual command TTL. User commands always fetch fresh data

@@ -1,16 +1,7 @@
 local M = {}
 
 local logger = require("package-version.utils.logger")
-
-local COMPOSER_JSON_FILE_NAME = "composer.json"
-local PACKAGE_JSON_FILE_NAME = "package.json"
-local NPM_LOCK_FILE_NAME = "package-lock.json"
-local YARN_LOCK_FILE_NAME = "yarn.lock"
-local PNPM_LOCK_FILE_NAME = "pnpm-lock.yaml"
-
-local PACKAGE_MANAGER_NPM = "npm"
-local PACKAGE_MANAGER_YARN = "yarn"
-local PACKAGE_MANAGER_PNPM = "pnpm"
+local const = require("package-version.utils.const")
 
 ---@param file_name string
 ---@return boolean|nil
@@ -35,31 +26,31 @@ end
 ---@return string|nil error_message
 ---@return string|nil package_manager
 local detect_package_manager = function()
-	if has_file(NPM_LOCK_FILE_NAME) and (has_file(YARN_LOCK_FILE_NAME) or has_file(PNPM_LOCK_FILE_NAME)) then
+	if has_file(const.PACKAGE_LOCK_JSON) and (has_file(const.YARN_LOCK) or has_file(const.PNPM_LOCK_YAML)) then
 		return "package-lock.json cannot coexist with yarn.lock or pnpm-lock.yaml. Please keep only one to avoid conflicts.",
 			nil
 	end
 
-	if has_file(YARN_LOCK_FILE_NAME) and (has_file(NPM_LOCK_FILE_NAME) or has_file(PNPM_LOCK_FILE_NAME)) then
+	if has_file(const.YARN_LOCK) and (has_file(const.PACKAGE_LOCK_JSON) or has_file(const.PNPM_LOCK_YAML)) then
 		return "yarn.lock cannot coexist with package-lock.json or pnpm-lock.yaml. Please keep only one to avoid conflicts.",
 			nil
 	end
 
-	if has_file(PNPM_LOCK_FILE_NAME) and (has_file(NPM_LOCK_FILE_NAME) or has_file(YARN_LOCK_FILE_NAME)) then
+	if has_file(const.PNPM_LOCK_YAML) and (has_file(const.PACKAGE_LOCK_JSON) or has_file(const.YARN_LOCK)) then
 		return "pnpm-lock.yaml cannot coexist with package-lock.json or yarn.lock. Please keep only one to avoid conflicts.",
 			nil
 	end
 
-	if has_file(NPM_LOCK_FILE_NAME) then
-		return nil, PACKAGE_MANAGER_NPM
+	if has_file(const.PACKAGE_LOCK_JSON) then
+		return nil, const.PACKAGE_MANAGER.NPM
 	end
 
-	if has_file(YARN_LOCK_FILE_NAME) then
-		return nil, PACKAGE_MANAGER_YARN
+	if has_file(const.YARN_LOCK) then
+		return nil, const.PACKAGE_MANAGER.YARN
 	end
 
-	if has_file(PNPM_LOCK_FILE_NAME) then
-		return nil, PACKAGE_MANAGER_PNPM
+	if has_file(const.PNPM_LOCK_YAML) then
+		return nil, const.PACKAGE_MANAGER.PNPM
 	end
 
 	return nil, nil
@@ -67,17 +58,14 @@ end
 
 ---@param package_config PackageVersionValidatedConfig
 M.installed = function(package_config)
-	local installed = require("package-version.installed")
-
 	local current_file_name = vim.fn.expand("%:t")
 
-	if current_file_name == COMPOSER_JSON_FILE_NAME then
-		installed.run__async_composer(package_config)
-
+	if current_file_name == const.COMPOSER_JSON then
+		require("package-version.installed.composer").run_async(package_config)
 		return
 	end
 
-	if current_file_name == PACKAGE_JSON_FILE_NAME then
+	if current_file_name == const.PACKAGE_JSON then
 		local error_msg, pm = detect_package_manager()
 
 		if error_msg then
@@ -90,12 +78,12 @@ M.installed = function(package_config)
 			return
 		end
 
-		if pm == PACKAGE_MANAGER_NPM then
-			installed.run__async_npm(package_config)
-		elseif pm == PACKAGE_MANAGER_YARN then
-			installed.run_async_yarn(package_config)
-		elseif pm == PACKAGE_MANAGER_PNPM then
-			installed.run_async_pnpm(package_config)
+		if pm == const.PACKAGE_MANAGER.NPM then
+			require("package-version.installed.npm").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.YARN then
+			require("package-version.installed.yarn").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.PNPM then
+			require("package-version.installed.pnpm").run_async(package_config)
 		end
 
 		return
@@ -106,17 +94,14 @@ end
 
 ---@param package_config PackageVersionValidatedConfig
 M.outdated = function(package_config)
-	local outdated = require("package-version.outdated")
-
 	local current_file_name = vim.fn.expand("%:t")
 
-	if current_file_name == COMPOSER_JSON_FILE_NAME then
-		outdated.run_async_composer(package_config)
-
+	if current_file_name == const.COMPOSER_JSON then
+		require("package-version.outdated.composer").run_async(package_config)
 		return
 	end
 
-	if current_file_name == PACKAGE_JSON_FILE_NAME then
+	if current_file_name == const.PACKAGE_JSON then
 		local error_msg, pm = detect_package_manager()
 
 		if error_msg then
@@ -129,12 +114,12 @@ M.outdated = function(package_config)
 			return
 		end
 
-		if pm == PACKAGE_MANAGER_NPM then
-			outdated.run_async_npm(package_config)
-		elseif pm == PACKAGE_MANAGER_YARN then
-			outdated.run_async_yarn(package_config)
-		elseif pm == PACKAGE_MANAGER_PNPM then
-			outdated.run_async_pnpm(package_config)
+		if pm == const.PACKAGE_MANAGER.NPM then
+			require("package-version.outdated.npm").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.YARN then
+			require("package-version.outdated.yarn").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.PNPM then
+			require("package-version.outdated.pnpm").run_async(package_config)
 		end
 
 		return
@@ -145,17 +130,14 @@ end
 
 ---@param package_config PackageVersionValidatedConfig
 M.update_all = function(package_config)
-	local update_all = require("package-version.update-all")
-
 	local current_file_name = vim.fn.expand("%:t")
 
-	if current_file_name == COMPOSER_JSON_FILE_NAME then
-		update_all.run_async_composer(package_config)
-
+	if current_file_name == const.COMPOSER_JSON then
+		require("package-version.update-all.composer").run_async(package_config)
 		return
 	end
 
-	if current_file_name == PACKAGE_JSON_FILE_NAME then
+	if current_file_name == const.PACKAGE_JSON then
 		local error_msg, pm = detect_package_manager()
 
 		if error_msg then
@@ -168,12 +150,12 @@ M.update_all = function(package_config)
 			return
 		end
 
-		if pm == PACKAGE_MANAGER_NPM then
-			update_all.run_async_npm(package_config)
-		elseif pm == PACKAGE_MANAGER_YARN then
-			update_all.run_async_yarn(package_config)
-		elseif pm == PACKAGE_MANAGER_PNPM then
-			update_all.run_async_pnpm(package_config)
+		if pm == const.PACKAGE_MANAGER.NPM then
+			require("package-version.update-all.npm").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.YARN then
+			require("package-version.update-all.yarn").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.PNPM then
+			require("package-version.update-all.pnpm").run_async(package_config)
 		end
 
 		return
@@ -184,17 +166,14 @@ end
 
 ---@param package_config PackageVersionValidatedConfig
 M.update_single = function(package_config)
-	local update_single = require("package-version.update-single")
-
 	local current_file_name = vim.fn.expand("%:t")
 
-	if current_file_name == COMPOSER_JSON_FILE_NAME then
-		update_single.run_async_composer(package_config)
-
+	if current_file_name == const.COMPOSER_JSON then
+		require("package-version.update-single.composer").run_async(package_config)
 		return
 	end
 
-	if current_file_name == PACKAGE_JSON_FILE_NAME then
+	if current_file_name == const.PACKAGE_JSON then
 		local error_msg, pm = detect_package_manager()
 
 		if error_msg then
@@ -207,12 +186,48 @@ M.update_single = function(package_config)
 			return
 		end
 
-		if pm == PACKAGE_MANAGER_NPM then
-			update_single.run_async_npm(package_config)
-		elseif pm == PACKAGE_MANAGER_YARN then
-			update_single.run_async_yarn(package_config)
-		elseif pm == PACKAGE_MANAGER_PNPM then
-			update_single.run_async_pnpm(package_config)
+		if pm == const.PACKAGE_MANAGER.NPM then
+			require("package-version.update-single.npm").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.YARN then
+			require("package-version.update-single.yarn").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.PNPM then
+			require("package-version.update-single.pnpm").run_async(package_config)
+		end
+
+		return
+	end
+
+	log_no_supported_file()
+end
+
+---@param package_config PackageVersionValidatedConfig
+M.homepage = function(package_config)
+	local current_file_name = vim.fn.expand("%:t")
+
+	if current_file_name == const.COMPOSER_JSON then
+		require("package-version.homepage.composer").run_async(package_config)
+		return
+	end
+
+	if current_file_name == const.PACKAGE_JSON then
+		local error_msg, pm = detect_package_manager()
+
+		if error_msg then
+			logger.error(error_msg)
+			return
+		end
+
+		if not pm then
+			no_strategy_for_package_json()
+			return
+		end
+
+		if pm == const.PACKAGE_MANAGER.NPM then
+			require("package-version.homepage.npm").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.YARN then
+			require("package-version.homepage.yarn").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.PNPM then
+			require("package-version.homepage.pnpm").run_async(package_config)
 		end
 
 		return
@@ -223,19 +238,12 @@ end
 
 ---@param package_config PackageVersionValidatedConfig
 M.warmup = function(package_config)
-	local installed = require("package-version.installed")
-	local outdated = require("package-version.outdated")
-
-	local current_file_name = vim.fn.expand("%:t")
-
-	if current_file_name == COMPOSER_JSON_FILE_NAME then
-		installed.warmup_cache_composer(package_config)
-		outdated.warmup_cache_composer(package_config)
-
-		return
+	if has_file(const.COMPOSER_JSON) then
+		require("package-version.installed.composer").warmup_cache(package_config)
+		require("package-version.outdated.composer").warmup_cache(package_config)
 	end
 
-	if current_file_name == PACKAGE_JSON_FILE_NAME then
+	if has_file(const.PACKAGE_JSON) then
 		local error_msg, pm = detect_package_manager()
 
 		if error_msg then
@@ -246,18 +254,16 @@ M.warmup = function(package_config)
 			return
 		end
 
-		if pm == PACKAGE_MANAGER_NPM then
-			installed.warmup_cache_npm(package_config)
-			outdated.warmup_cache_npm(package_config)
-		elseif pm == PACKAGE_MANAGER_YARN then
-			installed.warmup_cache_yarn(package_config)
-			outdated.warmup_cache_yarn(package_config)
-		elseif pm == PACKAGE_MANAGER_PNPM then
-			installed.warmup_cache_pnpm(package_config)
-			outdated.warmup_cache_pnpm(package_config)
+		if pm == const.PACKAGE_MANAGER.NPM then
+			require("package-version.installed.npm").warmup_cache(package_config)
+			require("package-version.outdated.npm").warmup_cache(package_config)
+		elseif pm == const.PACKAGE_MANAGER.YARN then
+			require("package-version.installed.yarn").warmup_cache(package_config)
+			require("package-version.outdated.yarn").warmup_cache(package_config)
+		elseif pm == const.PACKAGE_MANAGER.PNPM then
+			require("package-version.installed.pnpm").warmup_cache(package_config)
+			require("package-version.outdated.pnpm").warmup_cache(package_config)
 		end
-
-		return
 	end
 end
 

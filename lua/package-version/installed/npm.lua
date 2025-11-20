@@ -125,7 +125,7 @@ M.run_async = function(package_config)
 		local packages = result.dependencies or {}
 
 		if cache.is_enabled(cache_config) then
-			local ttl = cache.get_ttl(cache_config, "installed")
+			local ttl = cache.get_ttl(cache_config, cache.OPERATION.INSTALLED)
 
 			cache.set(cache.PACKAGE_MANAGER.NPM, cache.OPERATION.INSTALLED, packages, ttl)
 		end
@@ -198,7 +198,7 @@ M.warmup_cache = function(package_config)
 		return
 	end
 
-	local warmup_ttl = get_warmup_ttl(cache_config, "installed")
+	local warmup_ttl = get_warmup_ttl(cache_config, cache.OPERATION.INSTALLED)
 
 	if warmup_ttl == 0 then
 		return
@@ -242,7 +242,7 @@ M.warmup_cache = function(package_config)
 			end
 
 			local packages = result.dependencies or {}
-			warmup_ttl = get_warmup_ttl(cache_config, "installed")
+			warmup_ttl = get_warmup_ttl(cache_config, cache.OPERATION.INSTALLED)
 
 			cache.set(cache.PACKAGE_MANAGER.NPM, cache.OPERATION.INSTALLED, packages, warmup_ttl)
 		end,

@@ -63,6 +63,50 @@ M.register_which_keys = function(config)
 			end,
 			desc = "Update single package to latest version",
 		},
+		{
+			"<leader>vh",
+			group = "Visit Package Homepage",
+			function()
+				strategy.homepage(config)
+			end,
+			icon = {
+				icon = " ",
+				color = "green",
+			},
+			desc = "Visit package homepage or github page",
+		},
+		{
+			"<leader>vc",
+			group = "Cache",
+			icon = {
+				icon = " ",
+				color = "red",
+			},
+		},
+		{
+			"<leader>vcc",
+			group = "Clear All",
+			function()
+				require("package-version.cache").clear_all()
+			end,
+			icon = {
+				icon = " ",
+				color = "red",
+			},
+			desc = "Clear all plugin cache",
+		},
+		{
+			"<leader>vcs",
+			group = "Stats",
+			function()
+				require("package-version.cache").stats()
+			end,
+			icon = {
+				icon = " ",
+				color = "green",
+			},
+			desc = "Display cache stats",
+		},
 	})
 end
 
