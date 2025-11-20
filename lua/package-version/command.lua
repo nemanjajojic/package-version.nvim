@@ -1,8 +1,6 @@
 local M = {}
 
 local strategy = require("package-version.strategy")
-local cache = require("package-version.cache")
-local logger = require("package-version.utils.logger")
 
 ---@param name string
 ---@param callback function
@@ -33,27 +31,16 @@ M.register_commands = function(config)
 		strategy.update_single(config)
 	end, "Update single package")
 
-	create_command("PackageVersionClearCache", function()
-		cache.clear_all()
+	create_command("PackageVersionHomepage", function()
+		strategy.homepage(config)
+	end, "Open package github or homepage in browser")
 
-		logger.info("Plugin cache is cleared!")
+	create_command("PackageVersionClearCache", function()
+		require("package-version.cache").clear_all()
 	end, "Clear all package version cache")
 
 	create_command("PackageVersionCacheStats", function()
-		local stats = cache.stats()
-
-		if #stats.items == 0 then
-			logger.info("Cache is empty")
-			return
-		end
-
-		local message = "Cache items:"
-		for _, item in ipairs(stats.items) do
-			local status = item.expired and "expired" or "valid"
-			message = message .. string.format("\n  %s: %s", item.key, status)
-		end
-
-		logger.info(message)
+		require("package-version.cache").stats()
 	end, "Show cache statistics")
 end
 

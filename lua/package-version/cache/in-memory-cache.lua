@@ -1,24 +1,16 @@
+local const = require("package-version.utils.const")
+
 local M = {}
 
-M.PACKAGE_MANAGER = {
-	NPM = "npm",
-	COMPOSER = "composer",
-	YARN = "yarn",
-	PNPM = "pnpm",
-}
+local DEFAULT_TTL = nil
 
-M.OPERATION = {
-	INSTALLED = "installed",
-	OUTDATED = "outdated",
-}
+---@param default_ttl table
+M.set_default_ttl = function(default_ttl)
+	DEFAULT_TTL = default_ttl
+end
 
 ---@type table<string, CacheEntry>
 local cache_store = {}
-
-local DEFAULT_TTL = {
-	installed = 300,
-	outdated = 300,
-}
 
 ---@param package_manager string
 ---@param operation string
@@ -66,7 +58,7 @@ end
 ---@param ttl? number
 M.set = function(package_manager, operation, data, ttl)
 	local key = generate_key(package_manager, operation)
-	local effective_ttl = ttl or DEFAULT_TTL[operation] or 300
+	local effective_ttl = ttl or (DEFAULT_TTL and DEFAULT_TTL[operation]) or const.DEFAULT_VALUES.CACHE_TTL_INSTALLED
 
 	cache_store[key] = {
 		data = data,

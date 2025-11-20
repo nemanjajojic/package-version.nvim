@@ -153,7 +153,7 @@ M.run_async = function(package_config)
 		end
 
 		if cache.is_enabled(cache_config) then
-			local ttl = cache.get_ttl(cache_config, "outdated")
+			local ttl = cache.get_ttl(cache_config, cache.OPERATION.OUTDATED)
 
 			cache.set(cache.PACKAGE_MANAGER.COMPOSER, cache.OPERATION.OUTDATED, packages, ttl)
 		end
@@ -223,7 +223,7 @@ M.warmup_cache = function(package_config)
 		return
 	end
 
-	local warmup_ttl = get_warmup_ttl(cache_config, "outdated")
+	local warmup_ttl = get_warmup_ttl(cache_config, cache.OPERATION.OUTDATED)
 
 	if warmup_ttl == 0 then
 		return
@@ -278,7 +278,7 @@ M.warmup_cache = function(package_config)
 				}
 			end
 
-			warmup_ttl = get_warmup_ttl(cache_config, "outdated")
+			warmup_ttl = get_warmup_ttl(cache_config, cache.OPERATION.OUTDATED)
 
 			cache.set(cache.PACKAGE_MANAGER.COMPOSER, cache.OPERATION.OUTDATED, packages, warmup_ttl)
 		end,

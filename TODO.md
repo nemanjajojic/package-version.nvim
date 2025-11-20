@@ -13,8 +13,9 @@
 - [x] Add health check command
 - [x] Implement global mutex pattern to avoid re-execution of commands
 - [x] Cache command results for better performance
-- [x] Cache warm on BufEnter with debounce functionality
+- [x] Cache warm on BufReadPost with debounce functionality
 - [x] Add command to clear cache and to see cache status
+- [x] Warmup cache while working on code files eg. `.php`, `.js` etc...
 - [ ] Add list of all updated packages after update all command
 - [ ] Add tests
 - [ ] Support PyPi

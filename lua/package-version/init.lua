@@ -2,9 +2,9 @@ local M = {
 	config = {},
 }
 local command = require("package-version.command")
-local which_key_keymaps = require("package-version.which-key-keymaps")
-local config_validator = require("package-version.config")
-local warmup = require("package-version.cache.warmup")
+local which_key_keymaps = require("package-version.which-key")
+local config_validator = require("package-version.utils.config")
+local cache = require("package-version.cache")
 
 ---@param config? PackageVersionUserConfig
 function M.setup(config)
@@ -29,7 +29,7 @@ function M.setup(config)
 
 	command.register_commands(validated_config)
 
-	warmup.run_warmap(validated_config)
+	cache.run_warmup(validated_config)
 end
 
 return M

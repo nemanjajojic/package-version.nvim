@@ -36,6 +36,7 @@
 ---@class WarmupUserConfig
 ---@field debounce_ms? number
 ---@field ttl? WarmupTTLUserConfig
+---@field enable_code_files? boolean
 
 ---@class WarmupTTLUserConfig
 ---@field installed? number
@@ -79,6 +80,7 @@
 ---@class WarmupValidatedConfig
 ---@field debounce_ms number
 ---@field ttl WarmupTTLValidatedConfig
+---@field enable_code_files boolean
 
 ---@class WarmupTTLValidatedConfig
 ---@field installed number

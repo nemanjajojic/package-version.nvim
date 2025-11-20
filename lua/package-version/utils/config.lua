@@ -1,37 +1,38 @@
 local M = {}
 
-local VALID_SPINNER_TYPES = {
-	pacman = true,
-	ball = true,
-	space = true,
-	minimal = true,
-	dino = true,
-}
+local const = require("package-version.utils.const")
+
+-- Convert const.VALID_SPINNER_TYPES array to lookup table
+local VALID_SPINNER_TYPES = {}
+for _, type in ipairs(const.VALID_SPINNER_TYPES) do
+	VALID_SPINNER_TYPES[type] = true
+end
 
 local DEFAULT_CONFIG = {
 	color = {
-		latest = "#a6e3a1",
-		wanted = "#f9e2af",
-		current = "Comment",
-		abandoned = "#eba0ac",
+		latest = const.DEFAULT_VALUES.COLOR_LATEST,
+		wanted = const.DEFAULT_VALUES.COLOR_WANTED,
+		current = const.DEFAULT_VALUES.COLOR_CURRENT,
+		abandoned = const.DEFAULT_VALUES.COLOR_ABANDONED,
 	},
 	spinner = {
-		type = "space",
+		type = const.DEFAULT_VALUES.SPINNER_TYPE,
 	},
 	docker = nil,
-	timeout = 60,
+	timeout = const.DEFAULT_VALUES.TIMEOUT,
 	cache = {
 		enabled = true,
 		ttl = {
-			installed = 300, -- 5 minutes
-			outdated = 300, -- 5 minutes
+			installed = const.DEFAULT_VALUES.CACHE_TTL_INSTALLED,
+			outdated = const.DEFAULT_VALUES.CACHE_TTL_OUTDATED,
 		},
 		warmup = {
-			debounce_ms = 500, -- 500 milliseconds
+			debounce_ms = const.DEFAULT_VALUES.WARMUP_DEBOUNCE_MS,
 			ttl = {
-				installed = 3600, -- 1 hour
-				outdated = 3600, -- 1 hour
+				installed = const.DEFAULT_VALUES.WARMUP_TTL_INSTALLED,
+				outdated = const.DEFAULT_VALUES.WARMUP_TTL_OUTDATED,
 			},
+			enable_code_files = const.DEFAULT_VALUES.WARMUP_ENABLE_CODE_FILES,
 		},
 	},
 }
@@ -92,7 +93,6 @@ local function validate_color_config(color_config)
 	return true
 end
 
---- Validate spinner configuration
 ---@param spinner_config any
 ---@return boolean success
 ---@return string? error_message
@@ -185,12 +185,17 @@ local function validate_timeout(timeout)
 		return false, "timeout must be a number"
 	end
 
-	if timeout <= 0 then
-		return false, "timeout must be greater than 0"
+	if timeout < const.LIMITS.TIMEOUT_MIN then
+		return false, string.format("timeout must be >= %d", const.LIMITS.TIMEOUT_MIN)
 	end
 
-	if timeout > 300 then
-		return false, "timeout must be less than or equal to 300 seconds (5 minutes)"
+	if timeout > const.LIMITS.TIMEOUT_MAX then
+		return false,
+			string.format(
+				"timeout must be <= %d seconds (%d minutes)",
+				const.LIMITS.TIMEOUT_MAX,
+				const.LIMITS.TIMEOUT_MAX / 60
+			)
 	end
 
 	return true
@@ -232,12 +237,18 @@ local function validate_cache_config(cache_config)
 				return false, string.format("cache.ttl.%s must be a number (seconds)", key)
 			end
 
-			if value < 0 then
-				return false, string.format("cache.ttl.%s must be >= 0", key)
+			if value < const.LIMITS.CACHE_TTL_MIN then
+				return false, string.format("cache.ttl.%s must be >= %d", key, const.LIMITS.CACHE_TTL_MIN)
 			end
 
-			if value > 3600 then
-				return false, string.format("cache.ttl.%s must be <= 3600 seconds (1 hour)", key)
+			if value > const.LIMITS.CACHE_TTL_MAX then
+				return false,
+					string.format(
+						"cache.ttl.%s must be <= %d seconds (%d hour)",
+						key,
+						const.LIMITS.CACHE_TTL_MAX,
+						const.LIMITS.CACHE_TTL_MAX / 3600
+					)
 			end
 		end
 	end
@@ -252,12 +263,18 @@ local function validate_cache_config(cache_config)
 				return false, "cache.warmup.debounce_ms must be a number (milliseconds)"
 			end
 
-			if cache_config.warmup.debounce_ms < 0 then
-				return false, "cache.warmup.debounce_ms must be >= 0"
+			if cache_config.warmup.debounce_ms < const.LIMITS.WARMUP_DEBOUNCE_MIN then
+				return false,
+					string.format("cache.warmup.debounce_ms must be >= %d", const.LIMITS.WARMUP_DEBOUNCE_MIN)
 			end
 
-			if cache_config.warmup.debounce_ms > 10000 then
-				return false, "cache.warmup.debounce_ms must be <= 10000 (10 seconds)"
+			if cache_config.warmup.debounce_ms > const.LIMITS.WARMUP_DEBOUNCE_MAX then
+				return false,
+					string.format(
+						"cache.warmup.debounce_ms must be <= %d (%d seconds)",
+						const.LIMITS.WARMUP_DEBOUNCE_MAX,
+						const.LIMITS.WARMUP_DEBOUNCE_MAX / 1000
+					)
 			end
 		end
 
@@ -281,17 +298,29 @@ local function validate_cache_config(cache_config)
 					return false, string.format("cache.warmup.ttl.%s must be a number (seconds)", key)
 				end
 
-				if value < 0 then
-					return false, string.format("cache.warmup.ttl.%s must be >= 0", key)
+				if value < const.LIMITS.WARMUP_TTL_MIN then
+					return false, string.format("cache.warmup.ttl.%s must be >= %d", key, const.LIMITS.WARMUP_TTL_MIN)
 				end
 
-				if value > 86400 then
-					return false, string.format("cache.warmup.ttl.%s must be <= 86400 seconds (24 hours)", key)
+				if value > const.LIMITS.WARMUP_TTL_MAX then
+					return false,
+						string.format(
+							"cache.warmup.ttl.%s must be <= %d seconds (%d hours)",
+							key,
+							const.LIMITS.WARMUP_TTL_MAX,
+							const.LIMITS.WARMUP_TTL_MAX / 3600
+						)
 				end
 			end
 		end
 
-		local valid_warmup_fields = { "debounce_ms", "ttl" }
+		if cache_config.warmup.enable_code_files ~= nil then
+			if type(cache_config.warmup.enable_code_files) ~= "boolean" then
+				return false, "cache.warmup.enable_code_files must be a boolean"
+			end
+		end
+
+		local valid_warmup_fields = { "debounce_ms", "ttl", "enable_code_files" }
 		for key in pairs(cache_config.warmup) do
 			if not vim.tbl_contains(valid_warmup_fields, key) then
 				return false,
