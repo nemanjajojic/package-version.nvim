@@ -8,32 +8,6 @@ local cache = require("package-version.cache")
 
 local is_installed_virtual_line_visible = false
 
----@param command string
----@param docker_config? DockerValidatedConfig
----@param ignore_platform boolean
----@return string|nil
-local prepare_command = function(command, docker_config, ignore_platform)
-	if docker_config then
-		if not docker_config.composer_container_name or docker_config.composer_container_name == "" then
-			logger.error(
-				"Docker composer container name "
-					.. docker_config.composer_container_name
-					.. " is not specified in the configuration."
-			)
-
-			return nil
-		end
-
-		return "docker exec " .. docker_config.composer_container_name .. " " .. command
-	end
-
-	if ignore_platform then
-		command = command .. " --ignore-platform-reqs"
-	end
-
-	return command
-end
-
 ---@param packages table<string, {version: string}> Package name to version mapping
 ---@param namespace_id number
 ---@param color_config table
@@ -102,7 +76,7 @@ M.run_async = function(package_config)
 		end
 
 		if code ~= 0 then
-			logger.error("Command 'composer show' failed with code: " .. code)
+			logger.error("Command 'composer homepage' failed with code: " .. code)
 
 			spinner.hide()
 
@@ -149,7 +123,8 @@ M.run_async = function(package_config)
 
 	local docker_config = common.get_docker_config(package_config)
 
-	local installed_command = prepare_command("composer show --locked --direct --format=json", docker_config, false)
+	local installed_command =
+		common.prepare_composer_command("composer show --locked --direct --format=json", docker_config, false)
 
 	if not installed_command then
 		mutex.unlock()
@@ -218,7 +193,8 @@ M.warmup_cache = function(package_config)
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local installed_command = prepare_command("composer show --locked --direct --format=json", docker_config, false)
+	local installed_command =
+		common.prepare_composer_command("composer show --locked --direct --format=json", docker_config, false)
 
 	if not installed_command then
 		return

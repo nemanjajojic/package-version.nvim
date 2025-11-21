@@ -201,6 +201,42 @@ M.update_single = function(package_config)
 end
 
 ---@param package_config PackageVersionValidatedConfig
+M.install = function(package_config)
+	local current_file_name = vim.fn.expand("%:t")
+
+	if current_file_name == const.COMPOSER_JSON then
+		require("package-version.install.composer").run_async(package_config)
+		return
+	end
+
+	if current_file_name == const.PACKAGE_JSON then
+		local error_msg, pm = detect_package_manager()
+
+		if error_msg then
+			logger.error(error_msg)
+			return
+		end
+
+		if not pm then
+			no_strategy_for_package_json()
+			return
+		end
+
+		if pm == const.PACKAGE_MANAGER.NPM then
+			require("package-version.install.npm").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.YARN then
+			require("package-version.install.yarn").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.PNPM then
+			require("package-version.install.pnpm").run_async(package_config)
+		end
+
+		return
+	end
+
+	log_no_supported_file()
+end
+
+---@param package_config PackageVersionValidatedConfig
 M.homepage = function(package_config)
 	local current_file_name = vim.fn.expand("%:t")
 
@@ -228,6 +264,78 @@ M.homepage = function(package_config)
 			require("package-version.homepage.yarn").run_async(package_config)
 		elseif pm == const.PACKAGE_MANAGER.PNPM then
 			require("package-version.homepage.pnpm").run_async(package_config)
+		end
+
+		return
+	end
+
+	log_no_supported_file()
+end
+
+---@param package_config PackageVersionValidatedConfig
+M.remove = function(package_config)
+	local current_file_name = vim.fn.expand("%:t")
+
+	if current_file_name == const.COMPOSER_JSON then
+		require("package-version.remove.composer").run_async(package_config)
+		return
+	end
+
+	if current_file_name == const.PACKAGE_JSON then
+		local error_msg, pm = detect_package_manager()
+
+		if error_msg then
+			logger.error(error_msg)
+			return
+		end
+
+		if not pm then
+			no_strategy_for_package_json()
+			return
+		end
+
+		if pm == const.PACKAGE_MANAGER.NPM then
+			require("package-version.remove.npm").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.YARN then
+			require("package-version.remove.yarn").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.PNPM then
+			require("package-version.remove.pnpm").run_async(package_config)
+		end
+
+		return
+	end
+
+	log_no_supported_file()
+end
+
+---@param package_config PackageVersionValidatedConfig
+M.add_new = function(package_config)
+	local current_file_name = vim.fn.expand("%:t")
+
+	if current_file_name == const.COMPOSER_JSON then
+		require("package-version.add-new.composer").run_async(package_config)
+		return
+	end
+
+	if current_file_name == const.PACKAGE_JSON then
+		local error_msg, pm = detect_package_manager()
+
+		if error_msg then
+			logger.error(error_msg)
+			return
+		end
+
+		if not pm then
+			no_strategy_for_package_json()
+			return
+		end
+
+		if pm == const.PACKAGE_MANAGER.NPM then
+			require("package-version.add-new.npm").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.YARN then
+			require("package-version.add-new.yarn").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.PNPM then
+			require("package-version.add-new.pnpm").run_async(package_config)
 		end
 
 		return

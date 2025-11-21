@@ -31,9 +31,21 @@ M.register_commands = function(config)
 		strategy.update_single(config)
 	end, "Update single package")
 
+	create_command("PackageVersionInstall", function()
+		strategy.install(config)
+	end, "Install packages from lock file")
+
 	create_command("PackageVersionHomepage", function()
 		strategy.homepage(config)
 	end, "Open package github or homepage in browser")
+
+	create_command("PackageVersionRemove", function()
+		strategy.remove(config)
+	end, "Remove package from project")
+
+	create_command("PackageVersionAddNew", function()
+		strategy.add_new(config)
+	end, "Add new package to project")
 
 	create_command("PackageVersionClearCache", function()
 		require("package-version.cache").clear_all()

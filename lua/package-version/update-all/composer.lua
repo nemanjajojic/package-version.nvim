@@ -5,31 +5,7 @@ local spinner = require("package-version.utils.spinner")
 local common = require("package-version.utils.common")
 local mutex = require("package-version.utils.mutex")
 local cache = require("package-version.cache")
----@param command string
----@param docker_config? DockerValidatedConfig
----@param ignore_platform boolean
----@return string|nil
-local prepare_command = function(command, docker_config, ignore_platform)
-	if docker_config then
-		if not docker_config.composer_container_name or docker_config.composer_container_name == "" then
-			logger.error(
-				"Docker composer container name "
-					.. docker_config.composer_container_name
-					.. " is not specified in the configuration."
-			)
-
-			return nil
-		end
-
-		return "docker exec " .. docker_config.composer_container_name .. " " .. command
-	end
-
-	if ignore_platform then
-		command = command .. " --ignore-platform-reqs"
-	end
-
-	return command
-end
+local window = require("package-version.utils.window")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
@@ -37,66 +13,95 @@ M.run_async = function(package_config)
 		return
 	end
 
-	logger.info("Updating all packages")
+	local options = {
+		{ label = "Latest", value = "" },
+		{ label = "Patch", value = "--patch-only" },
+	}
 
-	local timeout_timer
-
-	local on_exit = function(job_id, code, event)
-		local ok, err = pcall(function()
-			timeout_timer:stop()
-			timeout_timer:close()
-		end)
-		if not ok then
-			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
+	window.display_select("Select Update Scope", options, function(update_scope)
+		if not update_scope then
+			mutex.unlock()
+			return
 		end
 
-		if code ~= 0 then
-			logger.error("Command 'composer update all' failed with code: " .. code)
+		logger.info("Updating all packages")
+
+		local timeout_timer
+		local stderr_lines = {}
+
+		local on_exit = function(job_id, code, event)
+			local ok, err = pcall(function()
+				timeout_timer:stop()
+				timeout_timer:close()
+			end)
+			if not ok then
+				logger.error("Failed to cleanup timeout timer: " .. tostring(err))
+			end
 
 			spinner.hide()
 
+			if code ~= 0 then
+				logger.error("Command 'composer update all' failed with code: " .. code)
+
+				mutex.unlock()
+
+				window.display_error(stderr_lines, "composer update")
+
+				return
+			end
+
+			-- Display success output (composer writes to stderr)
+			window.display_success(stderr_lines, "composer update")
+
+			cache.invalidate_package_manager(cache.PACKAGE_MANAGER.COMPOSER)
+
 			mutex.unlock()
+		end
+
+		local docker_config = common.get_docker_config(package_config)
+		local cmd = "composer update --no-audit --no-progress --no-ansi"
+		if update_scope ~= "" then
+			cmd = cmd .. " " .. update_scope
+		end
+		local update_all_command = common.prepare_composer_command(cmd, docker_config, true)
+
+		if not update_all_command then
+			mutex.unlock()
+			return
+		end
+
+		spinner.show(package_config.spinner)
+
+		local job_id = vim.fn.jobstart(update_all_command, {
+			stdout_buffered = true,
+			on_stderr = function(_, data)
+				if data then
+					for _, line in ipairs(data) do
+						if line and line ~= "" then
+							table.insert(stderr_lines, line)
+						end
+					end
+				end
+			end,
+			on_exit = on_exit,
+		})
+
+		if job_id <= 0 then
+			mutex.unlock()
+
+			spinner.hide()
+
+			logger.error("Failed to start job")
 
 			return
 		end
 
-		cache.invalidate_package_manager(cache.PACKAGE_MANAGER.COMPOSER)
+		local timeout_seconds = common.get_timeout(package_config)
+		timeout_timer = common.start_job_timeout(job_id, timeout_seconds, "Composer update all command", function()
+			mutex.unlock()
 
-		spinner.hide("Composer packages updated successfully!")
-
-		mutex.unlock()
-	end
-
-	local docker_config = common.get_docker_config(package_config)
-	local update_all_command =
-		prepare_command("composer update --no-audit --no-progress --no-ansi", docker_config, true)
-
-	if not update_all_command then
-		return
-	end
-
-	spinner.show(package_config.spinner)
-
-	local job_id = vim.fn.jobstart(update_all_command, {
-		stdout_buffered = false,
-		on_exit = on_exit,
-	})
-
-	if job_id <= 0 then
-		mutex.unlock()
-
-		spinner.hide()
-
-		logger.error("Failed to start job")
-
-		return
-	end
-
-	local timeout_seconds = common.get_timeout(package_config)
-	timeout_timer = common.start_job_timeout(job_id, timeout_seconds, "Composer update all command", function()
-		mutex.unlock()
-
-		spinner.hide()
+			spinner.hide()
+		end)
 	end)
 end
 

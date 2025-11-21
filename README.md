@@ -23,7 +23,7 @@
 ## The Problem
 
 Imagine this: you’re in Neovim, and you want to keep an eye on your
-installed, outdated, abandoned packages, or you wanna quickly update them without
+installed, outdated, abandoned packages, or you wanna quickly update, remove or add them without
 having to leave the editor in a single keystroke. Well, now you can! With this plugin,
 you can toggle package versions right inside your main package manager file.
 
@@ -60,8 +60,36 @@ You have the following commands available:
 - `:PackageVersionUpdateAll` - update all outdated packages to latest version according to semver range
 - `:PackageVersionUpdateSingle` - update single package to latest version according to semver range
 
+> [!NOTE]
+> **Composer users:** When running update commands, you'll be prompted to choose an update scope:
+>
+> - **Latest** - Updates to the latest version within semver constraints (default behavior)
+> - **Patch** - Only allows patch version updates (e.g., 2.9.1 → 2.9.3, but not 2.9.1 → 2.10.0)
+>
+> This feature uses Composer's `--patch-only` flag and is only available for Composer. Other package managers (npm, yarn, pnpm) will update directly without prompting.
+
+### Package Management
+
+- `:PackageVersionInstall` - install packages from lock file
+- `:PackageVersionRemove` - remove package under cursor from dependencies
+- `:PackageVersionAddNew` - add a new package (prompts for dependency type and package name)
+
 > [!IMPORTANT]
 > `PackageVersionUpdateSingle` command will try to update package under cursor
+>
+> **`PackageVersionRemove` command:**
+>
+> - Removes the package under cursor from your dependencies
+> - **Composer only:** Prompts to select dependency type (Production or Development) before removal
+> - **npm/yarn/pnpm:** Automatically detects and removes from the correct section (no prompt needed)
+> - If removal fails (e.g., due to dependency conflicts), an error window will display the detailed error message
+>
+> **`PackageVersionAddNew` command** uses a two-step flow:
+>
+> 1. **Select dependency type** - Choose between Production or Development dependencies
+> 2. **Enter package name** - Specify which package to install
+>
+> If installation fails, an error window displays the detailed error message.
 >
 > `PackageVersionHomepage` command will try to open the homepage URL for the package under cursor. If homepage is not available, it falls back to the repository URL (if browser-friendly).
 
@@ -69,6 +97,8 @@ You have the following commands available:
 
 - `:PackageVersionClearCache` - clear all cached package data
 - `:PackageVersionCacheStats` - show cache statistics (list of cache keys with expiration status)
+
+For more visual examples of commands in action, go check [COMMANDS.md](COMMANDS.md)
 
 ## ⌨️ Mappings
 
@@ -82,6 +112,9 @@ provided by plugin.
 - `<leader>vh` - open package homepage/repository in browser
 - `<leader>vu` - update all outdated packages according to semver range
 - `<leader>vs` - update single package according to semver range
+- `<leader>vI` - install packages from lock file
+- `<leader>vr` - remove package under cursor
+- `<leader>va` - add a new package
 
 ### Cache Management
 
@@ -272,8 +305,8 @@ by setting `cache.warmup.enable_code_files = true`. This is **opt-in** because i
 aggressive and may not be needed for all workflows.
 
 > [!NOTE]
-> When `enable_code_files = true`, the debounce time is automatically increased to a minimum of 
-> **5 seconds** (regardless of `debounce_ms` setting) to prevent excessive warmup triggers when 
+> When `enable_code_files = true`, the debounce time is automatically increased to a minimum of
+> **5 seconds** (regardless of `debounce_ms` setting) to prevent excessive warmup triggers when
 > rapidly switching between code files.
 
 > [!TIP]

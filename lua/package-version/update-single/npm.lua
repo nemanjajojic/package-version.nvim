@@ -5,26 +5,7 @@ local spinner = require("package-version.utils.spinner")
 local common = require("package-version.utils.common")
 local mutex = require("package-version.utils.mutex")
 local cache = require("package-version.cache")
----@param command string
----@param docker_config? DockerValidatedConfig
----@return string|nil
-local prepare_command = function(command, docker_config)
-	if docker_config then
-		if not docker_config.npm_container_name or docker_config.npm_container_name == "" then
-			logger.error(
-				"Docker npm container name "
-					.. docker_config.npm_container_name
-					.. " is not specified in the configuration."
-			)
-
-			return nil
-		end
-
-		return "docker exec " .. docker_config.npm_container_name .. " " .. command
-	end
-
-	return command
-end
+local window = require("package-version.utils.window")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
@@ -46,6 +27,7 @@ M.run_async = function(package_config)
 	logger.info("Updating package: " .. package_name)
 
 	local command_output = {}
+	local stderr_lines = {}
 
 	local timeout_timer
 
@@ -59,43 +41,28 @@ M.run_async = function(package_config)
 			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
 		end
 
+		spinner.hide()
+
 		if code ~= 0 then
 			logger.error("Command npm update " .. package_name .. " failed with code: " .. code)
 
-			spinner.hide()
-
 			mutex.unlock()
+
+			window.display_error(stderr_lines, "npm update " .. package_name)
 
 			return
 		end
 
 		cache.invalidate_package_manager(cache.PACKAGE_MANAGER.NPM)
 
-		local json_str = table.concat(command_output, "\n")
-
-		---@type table<{changed: string}>
-		local result
-
-		ok, result = pcall(vim.fn.json_decode, json_str)
-
-		if not ok then
-			logger.error("JSON decode error: " .. result)
-
-			return
-		end
-
-		if result.changed == 0 then
-			spinner.hide("Package " .. package_name .. " is already up to date!")
-		else
-			spinner.hide("Package " .. package_name .. " updated successfully!")
-		end
+		window.display_success(command_output, "npm update " .. package_name)
 
 		mutex.unlock()
 	end
 
 	local docker_config = common.get_docker_config(package_config)
 	local update_one_command =
-		prepare_command("npm update " .. package_name .. " --no-fund --no-audit --json", docker_config)
+		common.prepare_npm_command("npm update " .. package_name .. " --no-fund --no-audit --json", docker_config)
 
 	if not update_one_command then
 		return
@@ -105,6 +72,7 @@ M.run_async = function(package_config)
 
 	local job_id = vim.fn.jobstart(update_one_command, {
 		stdout_buffered = true,
+		stderr_buffered = true,
 		on_stdout = function(_, data)
 			if data then
 				for _, line in ipairs(data) do
@@ -114,7 +82,15 @@ M.run_async = function(package_config)
 				end
 			end
 		end,
-
+		on_stderr = function(_, data)
+			if data then
+				for _, line in ipairs(data) do
+					if line ~= "" then
+						table.insert(stderr_lines, line)
+					end
+				end
+			end
+		end,
 		on_exit = on_exit,
 	})
 

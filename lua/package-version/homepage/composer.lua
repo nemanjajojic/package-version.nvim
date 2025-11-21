@@ -2,29 +2,8 @@ local M = {}
 
 local logger = require("package-version.utils.logger")
 local common = require("package-version.utils.common")
-local homepage_common = require("package-version.homepage.common")
 local mutex = require("package-version.utils.mutex")
-
----@param command string
----@param docker_config? DockerValidatedConfig
----@return string|nil
-local prepare_command = function(command, docker_config)
-	if docker_config then
-		if not docker_config.composer_container_name or docker_config.composer_container_name == "" then
-			logger.error(
-				"Docker composer container name "
-					.. docker_config.composer_container_name
-					.. " is not specified in the configuration."
-			)
-
-			return nil
-		end
-
-		return "docker exec " .. docker_config.composer_container_name .. " " .. command
-	end
-
-	return command
-end
+local homepage_common = require("package-version.homepage.common")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
@@ -101,7 +80,7 @@ M.run_async = function(package_config)
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local homepage_command = prepare_command("composer show " .. package_name .. " --format=json", docker_config)
+	local homepage_command = common.prepare_composer_command("composer show " .. package_name .. " --format=json", docker_config, false)
 
 	if not homepage_command then
 		mutex.unlock()

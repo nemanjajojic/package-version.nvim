@@ -5,34 +5,13 @@ local spinner = require("package-version.utils.spinner")
 local common = require("package-version.utils.common")
 local mutex = require("package-version.utils.mutex")
 local cache = require("package-version.cache")
----@param command string
----@param docker_config? DockerValidatedConfig
----@return string|nil
-local prepare_command = function(command, docker_config)
-	if docker_config then
-		if not docker_config.pnpm_container_name or docker_config.pnpm_container_name == "" then
-			logger.error(
-				"Docker pnpm container name "
-					.. docker_config.pnpm_container_name
-					.. " is not specified in the configuration."
-			)
-
-			return nil
-		end
-
-		return "docker exec " .. docker_config.pnpm_container_name .. " " .. command
-	end
-
-	return command
-end
+local window = require("package-version.utils.window")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
 	if not mutex.try_lock("PNPM Update Single") then
 		return
 	end
-
-	local is_package_up_to_date = false
 
 	local current_line = vim.api.nvim_get_current_line()
 	local package_name = common.get_package_name_from_line_json(current_line)
@@ -48,6 +27,8 @@ M.run_async = function(package_config)
 	logger.info("Updating package: " .. package_name)
 
 	local timeout_timer
+	local output_lines = {}
+	local stderr_lines = {}
 
 	local on_exit = function(job_id, code, event)
 		local ok, err = pcall(function()
@@ -59,29 +40,27 @@ M.run_async = function(package_config)
 			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
 		end
 
+		spinner.hide()
+
 		if code ~= 0 then
 			logger.error("Command pnpm update " .. package_name .. " failed with code: " .. code)
 
-			spinner.hide()
-
 			mutex.unlock()
+
+			window.display_error(stderr_lines, "pnpm update " .. package_name)
 
 			return
 		end
 
 		cache.invalidate_package_manager(cache.PACKAGE_MANAGER.PNPM)
 
-		if is_package_up_to_date then
-			spinner.hide("Package " .. package_name .. " is already up to date!")
-		else
-			spinner.hide("Package " .. package_name .. " updated successfully!")
-		end
+		window.display_success(output_lines, "pnpm update " .. package_name)
 
 		mutex.unlock()
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local update_one_command = prepare_command("pnpm update " .. package_name, docker_config)
+	local update_one_command = common.prepare_pnpm_command("pnpm update " .. package_name, docker_config)
 
 	if not update_one_command then
 		return
@@ -91,16 +70,25 @@ M.run_async = function(package_config)
 
 	local job_id = vim.fn.jobstart(update_one_command, {
 		stdout_buffered = true,
+		stderr_buffered = true,
 		on_stdout = function(_, data)
 			if data then
 				for _, line in ipairs(data) do
-					if line:match("Already up to date") then
-						is_package_up_to_date = true
+					if line ~= "" then
+						table.insert(output_lines, line)
 					end
 				end
 			end
 		end,
-
+		on_stderr = function(_, data)
+			if data then
+				for _, line in ipairs(data) do
+					if line ~= "" then
+						table.insert(stderr_lines, line)
+					end
+				end
+			end
+		end,
 		on_exit = on_exit,
 	})
 
