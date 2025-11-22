@@ -5,26 +5,7 @@ local spinner = require("package-version.utils.spinner")
 local common = require("package-version.utils.common")
 local mutex = require("package-version.utils.mutex")
 local cache = require("package-version.cache")
----@param command string
----@param docker_config? DockerValidatedConfig
----@return string|nil
-local prepare_command = function(command, docker_config)
-	if docker_config then
-		if not docker_config.npm_container_name or docker_config.npm_container_name == "" then
-			logger.error(
-				"Docker npm container name "
-					.. docker_config.npm_container_name
-					.. " is not specified in the configuration."
-			)
-
-			return nil
-		end
-
-		return "docker exec " .. docker_config.npm_container_name .. " " .. command
-	end
-
-	return command
-end
+local window = require("package-version.utils.window")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
@@ -35,6 +16,8 @@ M.run_async = function(package_config)
 	logger.info("Updating all packages")
 
 	local timeout_timer
+	local output_lines = {}
+	local stderr_lines = {}
 
 	local on_exit = function(job_id, code, event)
 		local ok, err = pcall(function()
@@ -46,25 +29,27 @@ M.run_async = function(package_config)
 			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
 		end
 
+		spinner.hide()
+
 		if code ~= 0 then
 			logger.error("Command npm update failed with code: " .. code)
 
 			mutex.unlock()
 
-			spinner.hide()
+			window.display_error(stderr_lines, "npm update")
 
 			return
 		end
 
-		cache.invalidate_package_manager(cache.PACKAGE_MANAGER.NPM)
+		window.display_success(output_lines, "npm update")
 
-		spinner.hide("NPM packages updated successfully!")
+		cache.invalidate_package_manager(cache.PACKAGE_MANAGER.NPM)
 
 		mutex.unlock()
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local update_all_command = prepare_command("npm update --no-audit --no-progress", docker_config)
+	local update_all_command = common.prepare_npm_command("npm update --no-audit --no-progress", docker_config)
 
 	if not update_all_command then
 		return
@@ -73,7 +58,26 @@ M.run_async = function(package_config)
 	spinner.show(package_config.spinner)
 
 	local job_id = vim.fn.jobstart(update_all_command, {
-		stdout_buffered = false,
+		stdout_buffered = true,
+		stderr_buffered = true,
+		on_stdout = function(_, data)
+			if data then
+				for _, line in ipairs(data) do
+					if line ~= "" then
+						table.insert(output_lines, line)
+					end
+				end
+			end
+		end,
+		on_stderr = function(_, data)
+			if data then
+				for _, line in ipairs(data) do
+					if line ~= "" then
+						table.insert(stderr_lines, line)
+					end
+				end
+			end
+		end,
 		on_exit = on_exit,
 	})
 

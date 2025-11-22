@@ -8,27 +8,6 @@ local cache = require("package-version.cache")
 
 local is_outdated_virtual_line_visible = false
 
----@param command string
----@param docker_config? DockerValidatedConfig
----@return string|nil
-local prepare_command = function(command, docker_config)
-	if docker_config then
-		if not docker_config.pnpm_container_name or docker_config.pnpm_container_name == "" then
-			logger.error(
-				"Docker pnpm container name "
-					.. docker_config.pnpm_container_name
-					.. " is not specified in the configuration."
-			)
-
-			return nil
-		end
-
-		return "docker exec " .. docker_config.pnpm_container_name .. " " .. command
-	end
-
-	return command
-end
-
 ---@param packages table<string, {current: string, wanted: string, latest: string, isDeprecated: boolean}> Package data
 ---@param namespace_id number
 ---@param color_config table
@@ -177,7 +156,7 @@ M.run_async = function(package_config)
 
 	local docker_config = common.get_docker_config(package_config)
 
-	local outdated_command = prepare_command("pnpm outdated --json", docker_config)
+	local outdated_command = common.prepare_pnpm_command("pnpm outdated --json", docker_config)
 
 	if not outdated_command then
 		return
@@ -244,7 +223,7 @@ M.warmup_cache = function(package_config)
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local outdated_command = prepare_command("pnpm outdated --json", docker_config)
+	local outdated_command = common.prepare_pnpm_command("pnpm outdated --json", docker_config)
 
 	if not outdated_command then
 		return

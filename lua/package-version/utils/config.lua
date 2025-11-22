@@ -2,7 +2,6 @@ local M = {}
 
 local const = require("package-version.utils.const")
 
--- Convert const.VALID_SPINNER_TYPES array to lookup table
 local VALID_SPINNER_TYPES = {}
 for _, type in ipairs(const.VALID_SPINNER_TYPES) do
 	VALID_SPINNER_TYPES[type] = true
@@ -264,8 +263,7 @@ local function validate_cache_config(cache_config)
 			end
 
 			if cache_config.warmup.debounce_ms < const.LIMITS.WARMUP_DEBOUNCE_MIN then
-				return false,
-					string.format("cache.warmup.debounce_ms must be >= %d", const.LIMITS.WARMUP_DEBOUNCE_MIN)
+				return false, string.format("cache.warmup.debounce_ms must be >= %d", const.LIMITS.WARMUP_DEBOUNCE_MIN)
 			end
 
 			if cache_config.warmup.debounce_ms > const.LIMITS.WARMUP_DEBOUNCE_MAX then

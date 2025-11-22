@@ -16,6 +16,15 @@
 - [x] Cache warm on BufReadPost with debounce functionality
 - [x] Add command to clear cache and to see cache status
 - [x] Warmup cache while working on code files eg. `.php`, `.js` etc...
-- [ ] Add list of all updated packages after update all command
-- [ ] Add tests
-- [ ] Support PyPi
+- [x] Remove package at cursor with dialog confirmation and environment selection
+- [x] Add new package with environment selection
+- [x] Show error messages at the bottom of the window if command fails
+- [x] Add list of all updated packages after update all command
+- [x] Add install command for installing packages from lock file
+- [ ] Support audit command
+- [ ] Add tests and release v1.0.0 🚀
+- [ ] Think about supporting more package managers like:
+  - [ ] bun
+  - [ ] pip
+  - [ ] gem
+  - [ ] cargo

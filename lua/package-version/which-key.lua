@@ -17,75 +17,103 @@ M.register_which_keys = function(config)
 		},
 		{
 			"<leader>vi",
-			group = "Installed",
-			icon = {
-				icon = "󰏖 ",
-				color = "green",
-			},
 			function()
 				strategy.installed(config)
 			end,
-			desc = "Toggle installed package versions from lock file",
-		},
-		{
-			"<leader>vo",
-			group = "Outdated",
 			icon = {
 				icon = "󰏖 ",
 				color = "green",
 			},
+			desc = "Toggle installed package versions",
+		},
+		{
+			"<leader>vI",
+			function()
+				strategy.install(config)
+			end,
+			icon = {
+				icon = "󰏖 ",
+				color = "green",
+			},
+			desc = "Install packages from lock file",
+		},
+
+		{
+			"<leader>vo",
 			function()
 				strategy.outdated(config)
 			end,
+			icon = {
+				icon = "󰏖 ",
+				color = "green",
+			},
 			desc = "Toggle outdated package versions",
 		},
 		{
-			"<leader>vu",
-			group = "Update All",
-			icon = {
-				icon = "󰏖 ",
-				color = "green",
-			},
-			function()
-				strategy.update_all(config)
-			end,
-			desc = "Update all packages to latest version",
-		},
-		{
-			"<leader>vs",
-			group = "Update Single",
-			icon = {
-				icon = "󰏖 ",
-				color = "green",
-			},
-			function()
-				strategy.update_single(config)
-			end,
-			desc = "Update single package to latest version",
-		},
-		{
 			"<leader>vh",
-			group = "Visit Package Homepage",
 			function()
 				strategy.homepage(config)
 			end,
 			icon = {
-				icon = " ",
+				icon = "󰋜 ",
+				color = "blue",
+			},
+			desc = "Open package homepage/repository in browser",
+		},
+		{
+			"<leader>vu",
+			function()
+				strategy.update_all(config)
+			end,
+			icon = {
+				icon = "󰏖 ",
 				color = "green",
 			},
-			desc = "Visit package homepage or github page",
+			desc = "Update all packages",
+		},
+		{
+			"<leader>vs",
+			function()
+				strategy.update_single(config)
+			end,
+			icon = {
+				icon = "󰏖 ",
+				color = "green",
+			},
+			desc = "Update package under cursor",
+		},
+		{
+			"<leader>vr",
+			function()
+				strategy.remove(config)
+			end,
+			icon = {
+				icon = "󱧙 ",
+				color = "red",
+			},
+			desc = "Remove package under cursor",
+		},
+		{
+			"<leader>va",
+			function()
+				strategy.add_new(config)
+			end,
+			icon = {
+				icon = "󰏖 ",
+				color = "green",
+			},
+			desc = "Add new package",
 		},
 		{
 			"<leader>vc",
 			group = "Cache",
 			icon = {
 				icon = " ",
-				color = "red",
+				color = "yellow",
 			},
 		},
 		{
 			"<leader>vcc",
-			group = "Clear All",
 			function()
 				require("package-version.cache").clear_all()
 			end,
@@ -93,17 +121,16 @@ M.register_which_keys = function(config)
 				icon = " ",
 				color = "red",
 			},
-			desc = "Clear all plugin cache",
+			desc = "Clear plugin cache",
 		},
 		{
 			"<leader>vcs",
-			group = "Stats",
 			function()
 				require("package-version.cache").stats()
 			end,
 			icon = {
 				icon = " ",
-				color = "green",
+				color = "blue",
 			},
 			desc = "Display cache stats",
 		},

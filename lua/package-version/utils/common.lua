@@ -1,5 +1,7 @@
 local M = {}
 
+local logger = require("package-version.utils.logger")
+
 ---@param color_config ColorValidatedConfig
 ---@return string
 M.abandoned_hl = function(color_config)
@@ -136,7 +138,6 @@ end
 ---@param on_timeout fun() Callback to execute on timeout (should reset guard flag and hide spinner)
 ---@return TimeoutTimer timer The timer object (must be stopped/closed in on_exit)
 M.start_job_timeout = function(job_id, timeout_seconds, command_name, on_timeout)
-	local logger = require("package-version.utils.logger")
 	local timeout_timer = vim.uv.new_timer()
 
 	timeout_timer:start(timeout_seconds * 1000, 0, function()
@@ -149,6 +150,95 @@ M.start_job_timeout = function(job_id, timeout_seconds, command_name, on_timeout
 	end)
 
 	return timeout_timer
+end
+
+---@param command string
+---@param docker_config? DockerValidatedConfig
+---@param ignore_platform boolean
+---@return string|nil command
+M.prepare_composer_command = function(command, docker_config, ignore_platform)
+	if docker_config then
+		if not docker_config.composer_container_name or docker_config.composer_container_name == "" then
+			logger.error(
+				"Docker composer container name "
+					.. docker_config.composer_container_name
+					.. " is not specified in the configuration."
+			)
+
+			return nil
+		end
+
+		return "docker exec " .. docker_config.composer_container_name .. " " .. command
+	end
+
+	if ignore_platform then
+		command = command .. " --ignore-platform-reqs"
+	end
+
+	return command
+end
+
+---@param command string
+---@param docker_config? DockerValidatedConfig
+---@return string|nil command
+M.prepare_npm_command = function(command, docker_config)
+	if docker_config then
+		if not docker_config.npm_container_name or docker_config.npm_container_name == "" then
+			logger.error(
+				"Docker npm container name "
+					.. docker_config.npm_container_name
+					.. " is not specified in the configuration."
+			)
+
+			return nil
+		end
+
+		return "docker exec " .. docker_config.npm_container_name .. " " .. command
+	end
+
+	return command
+end
+
+---@param command string
+---@param docker_config? DockerValidatedConfig
+---@return string|nil command
+M.prepare_yarn_command = function(command, docker_config)
+	if docker_config then
+		if not docker_config.yarn_container_name or docker_config.yarn_container_name == "" then
+			logger.error(
+				"Docker yarn container name "
+					.. docker_config.yarn_container_name
+					.. " is not specified in the configuration."
+			)
+
+			return nil
+		end
+
+		return "docker exec " .. docker_config.yarn_container_name .. " " .. command
+	end
+
+	return command
+end
+
+---@param command string
+---@param docker_config? DockerValidatedConfig
+---@return string|nil command
+M.prepare_pnpm_command = function(command, docker_config)
+	if docker_config then
+		if not docker_config.pnpm_container_name or docker_config.pnpm_container_name == "" then
+			logger.error(
+				"Docker pnpm container name "
+					.. docker_config.pnpm_container_name
+					.. " is not specified in the configuration."
+			)
+
+			return nil
+		end
+
+		return "docker exec " .. docker_config.pnpm_container_name .. " " .. command
+	end
+
+	return command
 end
 
 return M
