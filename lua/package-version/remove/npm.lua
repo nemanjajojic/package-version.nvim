@@ -6,6 +6,7 @@ local common = require("package-version.utils.common")
 local mutex = require("package-version.utils.mutex")
 local cache = require("package-version.cache")
 local window = require("package-version.utils.window")
+local npm_json = require("package-version.utils.parser.npm-json")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
@@ -26,6 +27,7 @@ M.run_async = function(package_config)
 
 	local timeout_timer
 
+	local stdout_lines = {}
 	local stderr_lines = {}
 
 	local on_exit = function(job_id, code, event)
@@ -40,11 +42,18 @@ M.run_async = function(package_config)
 
 		spinner.hide()
 
-		if code ~= 0 then
-			window.display_error(stderr_lines, "npm uninstall " .. package_name)
+		local parsed = npm_json.parse_json(stdout_lines)
 
+		if code ~= 0 or not parsed.success then
+			local error_lines
+			if not parsed.success then
+				error_lines = npm_json.format_output(parsed, "npm uninstall " .. package_name)
+			else
+				error_lines = stderr_lines
+			end
+
+			window.display_error(error_lines, "npm uninstall " .. package_name)
 			mutex.unlock()
-
 			return
 		end
 
@@ -52,17 +61,13 @@ M.run_async = function(package_config)
 
 		logger.info("Package " .. package_name .. " removed successfully!")
 
-		-- Reload buffer to reflect changes in package.json
 		vim.cmd("checktime")
 
 		mutex.unlock()
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local remove_command = common.prepare_npm_command(
-		"npm uninstall " .. package_name .. " --no-fund --no-audit",
-		docker_config
-	)
+	local remove_command = common.prepare_npm_command("npm uninstall " .. package_name .. " --json", docker_config)
 
 	if not remove_command then
 		return
@@ -71,7 +76,17 @@ M.run_async = function(package_config)
 	spinner.show(package_config.spinner)
 
 	local job_id = vim.fn.jobstart(remove_command, {
+		stdout_buffered = true,
 		stderr_buffered = true,
+		on_stdout = function(_, data)
+			if data then
+				for _, line in ipairs(data) do
+					if line and line ~= "" then
+						table.insert(stdout_lines, line)
+					end
+				end
+			end
+		end,
 		on_stderr = function(_, data)
 			if data then
 				for _, line in ipairs(data) do

@@ -1,7 +1,5 @@
 local M = {}
 
-local strategy = require("package-version.strategy")
-
 ---@param config PackageVersionValidatedConfig
 M.register_which_keys = function(config)
 	local which_key = require("which-key")
@@ -18,7 +16,7 @@ M.register_which_keys = function(config)
 		{
 			"<leader>vi",
 			function()
-				strategy.installed(config)
+				require("package-version.strategy").installed(config)
 			end,
 			icon = {
 				icon = "󰏖 ",
@@ -29,7 +27,7 @@ M.register_which_keys = function(config)
 		{
 			"<leader>vI",
 			function()
-				strategy.install(config)
+				require("package-version.strategy").install(config)
 			end,
 			icon = {
 				icon = "󰏖 ",
@@ -37,11 +35,10 @@ M.register_which_keys = function(config)
 			},
 			desc = "Install packages from lock file",
 		},
-
 		{
 			"<leader>vo",
 			function()
-				strategy.outdated(config)
+				require("package-version.strategy").outdated(config)
 			end,
 			icon = {
 				icon = "󰏖 ",
@@ -52,7 +49,7 @@ M.register_which_keys = function(config)
 		{
 			"<leader>vh",
 			function()
-				strategy.homepage(config)
+				require("package-version.strategy").homepage(config)
 			end,
 			icon = {
 				icon = "󰋜 ",
@@ -63,7 +60,7 @@ M.register_which_keys = function(config)
 		{
 			"<leader>vu",
 			function()
-				strategy.update_all(config)
+				require("package-version.strategy").update_all(config)
 			end,
 			icon = {
 				icon = "󰏖 ",
@@ -74,7 +71,7 @@ M.register_which_keys = function(config)
 		{
 			"<leader>vs",
 			function()
-				strategy.update_single(config)
+				require("package-version.strategy").update_single(config)
 			end,
 			icon = {
 				icon = "󰏖 ",
@@ -85,7 +82,7 @@ M.register_which_keys = function(config)
 		{
 			"<leader>vr",
 			function()
-				strategy.remove(config)
+				require("package-version.strategy").remove(config)
 			end,
 			icon = {
 				icon = "󱧙 ",
@@ -96,13 +93,24 @@ M.register_which_keys = function(config)
 		{
 			"<leader>va",
 			function()
-				strategy.add_new(config)
+				require("package-version.strategy").add_new(config)
 			end,
 			icon = {
 				icon = "󰏖 ",
 				color = "green",
 			},
 			desc = "Add new package",
+		},
+		{
+			"<leader>vA",
+			function()
+				require("package-version.strategy").audit(config)
+			end,
+			icon = {
+				icon = "󰒃 ",
+				color = "green",
+			},
+			desc = "Audit package vulnerabilities",
 		},
 		{
 			"<leader>vc",

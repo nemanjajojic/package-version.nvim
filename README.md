@@ -55,10 +55,13 @@ You have the following commands available:
 - `:PackageVersionOutdated` - toggle outdated package version
 - `:PackageVersionHomepage` - open package homepage or repository in browser
 
+> [!NOTE]
+> `PackageVersionHomepage` command will try to open the homepage URL for the package under cursor. If homepage is not available, it falls  back to the repository URL (if browser-friendly).
+
 ### Package Updates
 
-- `:PackageVersionUpdateAll` - update all outdated packages to latest version according to semver range
-- `:PackageVersionUpdateSingle` - update single package to latest version according to semver range
+- `:PackageVersionUpdateAll` - update all outdated packages
+- `:PackageVersionUpdateSingle` - update single package under cursor
 
 > [!NOTE]
 > **Composer users:** When running update commands, you'll be prompted to choose an update scope:
@@ -73,10 +76,9 @@ You have the following commands available:
 - `:PackageVersionInstall` - install packages from lock file
 - `:PackageVersionRemove` - remove package under cursor from dependencies
 - `:PackageVersionAddNew` - add a new package (prompts for dependency type and package name)
+- `:PackageVersionAudit` - check if any installed packages has known vulnerabilities
 
-> [!IMPORTANT]
-> `PackageVersionUpdateSingle` command will try to update package under cursor
->
+> [!NOTE]
 > **`PackageVersionRemove` command:**
 >
 > - Removes the package under cursor from your dependencies
@@ -89,9 +91,8 @@ You have the following commands available:
 > 1. **Select dependency type** - Choose between Production or Development dependencies
 > 2. **Enter package name** - Specify which package to install
 >
+> **`PackageVersionInstall` command**
 > If installation fails, an error window displays the detailed error message.
->
-> `PackageVersionHomepage` command will try to open the homepage URL for the package under cursor. If homepage is not available, it falls back to the repository URL (if browser-friendly).
 
 ### Cache Management
 
@@ -115,6 +116,7 @@ provided by plugin.
 - `<leader>vI` - install packages from lock file
 - `<leader>vr` - remove package under cursor
 - `<leader>va` - add a new package
+- `<leader>vA` - audit
 
 ### Cache Management
 
@@ -148,6 +150,9 @@ provided by plugin.
 
 You don’t have to change anything, but if you want to,
 you can customize it to your liking.
+
+> [NOTE]
+> Plugin will override only properties you set
 
 ```lua
 config = function()

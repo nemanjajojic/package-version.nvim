@@ -345,6 +345,42 @@ M.add_new = function(package_config)
 end
 
 ---@param package_config PackageVersionValidatedConfig
+M.audit = function(package_config)
+	local current_file_name = vim.fn.expand("%:t")
+
+	if current_file_name == const.COMPOSER_JSON then
+		require("package-version.audit.composer").run_async(package_config)
+		return
+	end
+
+	if current_file_name == const.PACKAGE_JSON then
+		local error_msg, pm = detect_package_manager()
+
+		if error_msg then
+			logger.error(error_msg)
+			return
+		end
+
+		if not pm then
+			no_strategy_for_package_json()
+			return
+		end
+
+		if pm == const.PACKAGE_MANAGER.NPM then
+			require("package-version.audit.npm").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.YARN then
+			require("package-version.audit.yarn").run_async(package_config)
+		elseif pm == const.PACKAGE_MANAGER.PNPM then
+			require("package-version.audit.pnpm").run_async(package_config)
+		end
+
+		return
+	end
+
+	log_no_supported_file()
+end
+
+---@param package_config PackageVersionValidatedConfig
 M.warmup = function(package_config)
 	if has_file(const.COMPOSER_JSON) then
 		require("package-version.installed.composer").warmup_cache(package_config)

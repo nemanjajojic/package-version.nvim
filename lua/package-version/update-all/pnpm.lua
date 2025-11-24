@@ -6,6 +6,7 @@ local common = require("package-version.utils.common")
 local mutex = require("package-version.utils.mutex")
 local cache = require("package-version.cache")
 local window = require("package-version.utils.window")
+local pnpm_json = require("package-version.utils.parser.pnpm-json")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
@@ -16,7 +17,7 @@ M.run_async = function(package_config)
 	logger.info("Updating all packages")
 
 	local timeout_timer
-	local output_lines = {}
+	local stdout_lines = {}
 	local stderr_lines = {}
 
 	local on_exit = function(job_id, code, event)
@@ -31,17 +32,29 @@ M.run_async = function(package_config)
 
 		spinner.hide()
 
-		if code ~= 0 then
+		-- Combine stdout and stderr for parsing
+		local all_lines = {}
+		for _, line in ipairs(stdout_lines) do
+			table.insert(all_lines, line)
+		end
+		for _, line in ipairs(stderr_lines) do
+			table.insert(all_lines, line)
+		end
+
+		-- Parse NDJSON output
+		local parsed = pnpm_json.parse_ndjson(all_lines)
+
+		-- Check for errors
+		if code ~= 0 or #parsed.errors > 0 then
 			logger.error("PNPM update all failed with code: " .. code)
-
 			mutex.unlock()
-
-			window.display_error(stderr_lines, "pnpm update")
-
+			local error_lines = pnpm_json.format_output(parsed, "pnpm update")
+			window.display_error(error_lines, "pnpm update")
 			return
 		end
 
-		window.display_success(output_lines, "pnpm update")
+		local success_lines = pnpm_json.format_output(parsed, "pnpm update")
+		window.display_success(success_lines, "pnpm update")
 
 		cache.invalidate_package_manager(cache.PACKAGE_MANAGER.PNPM)
 
@@ -49,7 +62,7 @@ M.run_async = function(package_config)
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local update_all_command = common.prepare_pnpm_command("pnpm update", docker_config)
+	local update_all_command = common.prepare_pnpm_command("pnpm update --reporter ndjson", docker_config)
 
 	if not update_all_command then
 		return
@@ -64,7 +77,7 @@ M.run_async = function(package_config)
 			if data then
 				for _, line in ipairs(data) do
 					if line ~= "" then
-						table.insert(output_lines, line)
+						table.insert(stdout_lines, line)
 					end
 				end
 			end

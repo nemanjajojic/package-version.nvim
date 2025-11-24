@@ -6,6 +6,7 @@ local common = require("package-version.utils.common")
 local mutex = require("package-version.utils.mutex")
 local cache = require("package-version.cache")
 local window = require("package-version.utils.window")
+local npm_json = require("package-version.utils.parser.npm-json")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
@@ -16,7 +17,7 @@ M.run_async = function(package_config)
 	logger.info("Updating all packages")
 
 	local timeout_timer
-	local output_lines = {}
+	local stdout_lines = {}
 	local stderr_lines = {}
 
 	local on_exit = function(job_id, code, event)
@@ -31,17 +32,25 @@ M.run_async = function(package_config)
 
 		spinner.hide()
 
-		if code ~= 0 then
-			logger.error("Command npm update failed with code: " .. code)
+		local parsed = npm_json.parse_json(stdout_lines)
 
+		if code ~= 0 or not parsed.success then
+			logger.error("Command npm update failed with code: " .. code)
 			mutex.unlock()
 
-			window.display_error(stderr_lines, "npm update")
+			local error_lines
+			if not parsed.success then
+				error_lines = npm_json.format_output(parsed, "npm update")
+			else
+				error_lines = stderr_lines
+			end
 
+			window.display_error(error_lines, "npm update")
 			return
 		end
 
-		window.display_success(output_lines, "npm update")
+		local success_lines = npm_json.format_output(parsed, "npm update")
+		window.display_success(success_lines, "npm update")
 
 		cache.invalidate_package_manager(cache.PACKAGE_MANAGER.NPM)
 
@@ -49,7 +58,7 @@ M.run_async = function(package_config)
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local update_all_command = common.prepare_npm_command("npm update --no-audit --no-progress", docker_config)
+	local update_all_command = common.prepare_npm_command("npm update --json", docker_config)
 
 	if not update_all_command then
 		return
@@ -64,7 +73,7 @@ M.run_async = function(package_config)
 			if data then
 				for _, line in ipairs(data) do
 					if line ~= "" then
-						table.insert(output_lines, line)
+						table.insert(stdout_lines, line)
 					end
 				end
 			end

@@ -1,0 +1,110 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "lodash": {
+      "name": "lodash",
+      "severity": "high",
+      "via": [
+        {
+          "source": 1523,
+          "name": "lodash",
+          "dependency": "lodash",
+          "title": "Prototype Pollution in lodash",
+          "url": "https://github.com/advisories/GHSA-p6mc-m468-83gw",
+          "severity": "high",
+          "cve": ["CVE-2020-28500"],
+          "range": "<4.17.21"
+        }
+      ],
+      "effects": [],
+      "range": "<4.17.21",
+      "nodes": ["node_modules/lodash"],
+      "fixAvailable": true
+    },
+    "minimist": {
+      "name": "minimist",
+      "severity": "critical",
+      "via": [
+        {
+          "source": 1179,
+          "name": "minimist",
+          "dependency": "minimist",
+          "title": "Prototype Pollution in minimist",
+          "url": "https://github.com/advisories/GHSA-xvch-5gv4-984h",
+          "severity": "critical",
+          "cve": ["CVE-2020-7598", "CVE-2021-44906"],
+          "range": "<0.2.4 || >=1.0.0 <1.2.6"
+        }
+      ],
+      "effects": [],
+      "range": "<0.2.4 || >=1.0.0 <1.2.6",
+      "nodes": ["node_modules/minimist"],
+      "fixAvailable": {
+        "name": "minimist",
+        "version": "1.2.6",
+        "isSemVerMajor": false
+      }
+    },
+    "async": {
+      "name": "async",
+      "severity": "moderate",
+      "via": [
+        {
+          "source": 1006,
+          "name": "async",
+          "dependency": "async",
+          "title": "Prototype Pollution in async",
+          "url": "https://github.com/advisories/GHSA-fwr7-v2mv-hh25",
+          "severity": "moderate",
+          "cve": ["CVE-2021-43138"],
+          "range": "<2.6.4 || >=3.0.0 <3.2.2"
+        }
+      ],
+      "effects": [],
+      "range": "<2.6.4 || >=3.0.0 <3.2.2",
+      "nodes": ["node_modules/async"],
+      "fixAvailable": {
+        "name": "async",
+        "version": "3.2.2",
+        "isSemVerMajor": true
+      }
+    },
+    "semver": {
+      "name": "semver",
+      "severity": "low",
+      "via": [
+        {
+          "source": 1098,
+          "name": "semver",
+          "dependency": "semver",
+          "title": "Regular Expression Denial of Service in semver",
+          "url": "https://github.com/advisories/GHSA-c2qf-rxjj-qqgw",
+          "severity": "low",
+          "range": "<5.7.2 || >=6.0.0 <6.3.1 || >=7.0.0 <7.5.2"
+        }
+      ],
+      "effects": [],
+      "range": "<5.7.2 || >=6.0.0 <6.3.1 || >=7.0.0 <7.5.2",
+      "nodes": ["node_modules/semver"],
+      "fixAvailable": false
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 1,
+      "moderate": 1,
+      "high": 1,
+      "critical": 1,
+      "total": 4
+    },
+    "dependencies": {
+      "prod": 150,
+      "dev": 200,
+      "optional": 10,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 360
+    }
+  }
+}

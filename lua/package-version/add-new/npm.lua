@@ -6,6 +6,7 @@ local common = require("package-version.utils.common")
 local mutex = require("package-version.utils.mutex")
 local cache = require("package-version.cache")
 local window = require("package-version.utils.window")
+local npm_json = require("package-version.utils.parser.npm-json")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
@@ -31,6 +32,7 @@ M.run_async = function(package_config)
 			end
 
 			local timeout_timer
+			local stdout_lines = {}
 			local stderr_lines = {}
 
 			local on_exit = function(job_id, code, event)
@@ -45,8 +47,18 @@ M.run_async = function(package_config)
 
 				spinner.hide()
 
-				if code ~= 0 then
-					window.display_error(stderr_lines, "npm install " .. package_name)
+				local parsed = npm_json.parse_json(stdout_lines)
+
+				if code ~= 0 or not parsed.success then
+					local error_lines
+
+					if not parsed.success then
+						error_lines = npm_json.format_output(parsed, "npm install " .. package_name)
+					else
+						error_lines = stderr_lines
+					end
+
+					window.display_error(error_lines, "npm install " .. package_name)
 					mutex.unlock()
 					return
 				end
@@ -58,12 +70,12 @@ M.run_async = function(package_config)
 				mutex.unlock()
 			end
 
-			-- Build command with dependency type flag
 			local cmd = "npm install " .. package_name
 			if dep_type ~= "" then
 				cmd = cmd .. " " .. dep_type
 			end
-			cmd = cmd .. " --color=always"
+
+			cmd = cmd .. " --json"
 
 			local docker_config = common.get_docker_config(package_config)
 			local install_command = common.prepare_npm_command(cmd, docker_config)
@@ -76,7 +88,17 @@ M.run_async = function(package_config)
 			spinner.show(package_config.spinner)
 
 			local job_id = vim.fn.jobstart(install_command, {
+				stdout_buffered = true,
 				stderr_buffered = true,
+				on_stdout = function(_, data)
+					if data then
+						for _, line in ipairs(data) do
+							if line and line ~= "" then
+								table.insert(stdout_lines, line)
+							end
+						end
+					end
+				end,
 				on_stderr = function(_, data)
 					if data then
 						for _, line in ipairs(data) do
