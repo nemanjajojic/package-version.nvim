@@ -21,7 +21,7 @@
 - [x] Show error messages at the bottom of the window if command fails
 - [x] Add list of all updated packages after update all command
 - [x] Add install command for installing packages from lock file
-- [ ] Support audit command
+- [x] Support audit command
 - [ ] Add tests and release v1.0.0 🚀
 - [ ] Think about supporting more package managers like:
   - [ ] bun

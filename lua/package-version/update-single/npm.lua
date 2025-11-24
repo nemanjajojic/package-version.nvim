@@ -6,6 +6,7 @@ local common = require("package-version.utils.common")
 local mutex = require("package-version.utils.mutex")
 local cache = require("package-version.cache")
 local window = require("package-version.utils.window")
+local npm_json = require("package-version.utils.parser.npm-json")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
@@ -26,7 +27,7 @@ M.run_async = function(package_config)
 
 	logger.info("Updating package: " .. package_name)
 
-	local command_output = {}
+	local stdout_lines = {}
 	local stderr_lines = {}
 
 	local timeout_timer
@@ -43,19 +44,30 @@ M.run_async = function(package_config)
 
 		spinner.hide()
 
-		if code ~= 0 then
+		-- Parse JSON output
+		local parsed = npm_json.parse_json(stdout_lines)
+
+		-- Check for errors
+		if code ~= 0 or not parsed.success then
 			logger.error("Command npm update " .. package_name .. " failed with code: " .. code)
-
 			mutex.unlock()
-
-			window.display_error(stderr_lines, "npm update " .. package_name)
-
+			
+			-- If we have parsed error, use formatted output; otherwise use stderr
+			local error_lines
+			if not parsed.success then
+				error_lines = npm_json.format_output(parsed, "npm update " .. package_name)
+			else
+				error_lines = stderr_lines
+			end
+			
+			window.display_error(error_lines, "npm update " .. package_name)
 			return
 		end
 
 		cache.invalidate_package_manager(cache.PACKAGE_MANAGER.NPM)
 
-		window.display_success(command_output, "npm update " .. package_name)
+		local success_lines = npm_json.format_output(parsed, "npm update " .. package_name)
+		window.display_success(success_lines, "npm update " .. package_name)
 
 		mutex.unlock()
 	end
@@ -77,7 +89,7 @@ M.run_async = function(package_config)
 			if data then
 				for _, line in ipairs(data) do
 					if line ~= "" then
-						table.insert(command_output, line)
+						table.insert(stdout_lines, line)
 					end
 				end
 			end

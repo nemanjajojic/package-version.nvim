@@ -64,7 +64,6 @@ M.run_async = function(package_config)
 
 			logger.info("Package " .. package_name .. " removed successfully!")
 
-			-- Reload buffer to reflect changes in composer.json
 			vim.cmd("checktime")
 
 			mutex.unlock()

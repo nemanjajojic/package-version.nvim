@@ -6,6 +6,7 @@ local common = require("package-version.utils.common")
 local mutex = require("package-version.utils.mutex")
 local cache = require("package-version.cache")
 local window = require("package-version.utils.window")
+local pnpm_json = require("package-version.utils.parser.pnpm-json")
 
 ---@param package_config PackageVersionValidatedConfig
 M.run_async = function(package_config)
@@ -26,6 +27,7 @@ M.run_async = function(package_config)
 
 	local timeout_timer
 
+	local stdout_lines = {}
 	local stderr_lines = {}
 
 	local on_exit = function(job_id, code, event)
@@ -40,11 +42,20 @@ M.run_async = function(package_config)
 
 		spinner.hide()
 
-		if code ~= 0 then
-			window.display_error(stderr_lines, "pnpm remove " .. package_name)
+		local all_lines = {}
+		for _, line in ipairs(stdout_lines) do
+			table.insert(all_lines, line)
+		end
+		for _, line in ipairs(stderr_lines) do
+			table.insert(all_lines, line)
+		end
 
+		local parsed = pnpm_json.parse_ndjson(all_lines)
+
+		if code ~= 0 or #parsed.errors > 0 then
+			local error_lines = pnpm_json.format_output(parsed, "pnpm remove " .. package_name)
+			window.display_error(error_lines, "pnpm remove " .. package_name)
 			mutex.unlock()
-
 			return
 		end
 
@@ -52,14 +63,14 @@ M.run_async = function(package_config)
 
 		logger.info("Package " .. package_name .. " removed successfully!")
 
-		-- Reload buffer to reflect changes in package.json
 		vim.cmd("checktime")
 
 		mutex.unlock()
 	end
 
 	local docker_config = common.get_docker_config(package_config)
-	local remove_command = common.prepare_pnpm_command("pnpm remove " .. package_name, docker_config)
+	local remove_command =
+		common.prepare_pnpm_command("pnpm remove " .. package_name .. " --reporter ndjson", docker_config)
 
 	if not remove_command then
 		return
@@ -68,7 +79,17 @@ M.run_async = function(package_config)
 	spinner.show(package_config.spinner)
 
 	local job_id = vim.fn.jobstart(remove_command, {
+		stdout_buffered = true,
 		stderr_buffered = true,
+		on_stdout = function(_, data)
+			if data then
+				for _, line in ipairs(data) do
+					if line and line ~= "" then
+						table.insert(stdout_lines, line)
+					end
+				end
+			end
+		end,
 		on_stderr = function(_, data)
 			if data then
 				for _, line in ipairs(data) do

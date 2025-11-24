@@ -116,21 +116,21 @@ local display_output = function(output_lines, title, is_error)
 
 	vim.api.nvim_buf_call(buf, function()
 		if is_error then
-			vim.cmd([[syntax match HorizontalWindowHeader /^    Command [Ff]ailed:.*    $/]])
-			vim.cmd([[highlight link HorizontalWindowHeader ErrorMsg]])
+			vim.cmd([[syntax match HorizontalWindowHeaderError /^    .\{-} command error    $/]])
+			vim.cmd([[highlight link HorizontalWindowHeaderError ErrorMsg]])
 		else
-			vim.cmd([[syntax match HorizontalWindowHeader /^    Command [Ss]ucceeded:.*    $/]])
+			vim.cmd([[syntax match HorizontalWindowHeaderSuccess /^    .\{-} command success    $/]])
 			vim.cmd(
 				string.format(
-					[[highlight HorizontalWindowHeader guifg=%s ctermfg=%s]],
+					[[highlight HorizontalWindowHeaderSuccess guifg=%s ctermfg=%s]],
 					COLOR_SUCCESS,
 					COLOR_SUCCESS_CTERM
 				)
 			)
 		end
+		
 		vim.cmd([[syntax match HorizontalWindowSeparator /^    =\+    $/]])
 		vim.cmd([[syntax match HorizontalWindowHelp /^    Press .*    $/]])
-
 		vim.cmd([[highlight link HorizontalWindowSeparator Comment]])
 		vim.cmd([[highlight link HorizontalWindowHelp Comment]])
 	end)
@@ -159,13 +159,13 @@ end
 ---@param output_lines string[]
 ---@param command_name string
 M.display_error = function(output_lines, command_name)
-	display_output(output_lines, "Command Failed: " .. command_name, true)
+	display_output(output_lines, command_name .. " command error", true)
 end
 
 ---@param output_lines string[]
 ---@param command_name string
 M.display_success = function(output_lines, command_name)
-	display_output(output_lines, "Command Succeeded: " .. command_name, false)
+	display_output(output_lines, command_name .. " command success", false)
 end
 
 ---@param title string

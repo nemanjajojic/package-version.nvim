@@ -1,0 +1,76 @@
+{
+  "advisories": [
+    {
+      "advisoryId": "GHSA-h5qr-8pv7-5j9q",
+      "packageName": "symfony/http-kernel",
+      "affectedPackage": "symfony/http-kernel",
+      "title": "Symfony HttpKernel Information Disclosure",
+      "link": "https://github.com/advisories/GHSA-h5qr-8pv7-5j9q",
+      "cve": ["CVE-2023-46733"],
+      "affectedVersions": ">=2.0.0,<2.8.52 || >=3.0.0,<3.4.47 || >=4.0.0,<4.4.37",
+      "source": "https://github.com/FriendsOfPHP/security-advisories",
+      "reportedAt": "2023-11-10T17:32:00+00:00",
+      "severity": "moderate"
+    },
+    {
+      "advisoryId": "GHSA-cwmx-hcrq-mhc3",
+      "packageName": "guzzlehttp/guzzle",
+      "affectedPackage": "guzzlehttp/guzzle",
+      "title": "CURLOPT_HTTPAUTH option not cleared on change of origin",
+      "link": "https://github.com/advisories/GHSA-cwmx-hcrq-mhc3",
+      "cve": null,
+      "affectedVersions": "<6.5.8 || >=7.0.0,<7.4.5",
+      "source": "https://github.com/FriendsOfPHP/security-advisories",
+      "reportedAt": "2023-10-15T10:00:00+00:00",
+      "severity": "high"
+    },
+    {
+      "advisoryId": "GHSA-wxmh-65f7-jcvw",
+      "packageName": "symfony/security-http",
+      "affectedPackage": "symfony/security-http",
+      "title": "Possible session fixation",
+      "link": "https://github.com/advisories/GHSA-wxmh-65f7-jcvw",
+      "cve": ["CVE-2023-2727", "CVE-2023-2728"],
+      "affectedVersions": ">=5.4.0,<5.4.24 || >=6.0.0,<6.2.10",
+      "source": "https://github.com/FriendsOfPHP/security-advisories",
+      "reportedAt": "2023-05-25T09:00:00+00:00",
+      "severity": "critical"
+    },
+    {
+      "advisoryId": "GHSA-m3q4-7qmj-657m",
+      "packageName": "doctrine/orm",
+      "affectedPackage": "doctrine/orm",
+      "title": "SQL Injection in Doctrine ORM",
+      "link": "https://github.com/advisories/GHSA-m3q4-7qmj-657m",
+      "cve": ["CVE-2022-31115"],
+      "affectedVersions": ">=2.0.0,<2.11.3 || >=2.12.0,<2.12.4 || >=2.13.0,<2.13.3",
+      "source": "https://github.com/FriendsOfPHP/security-advisories",
+      "reportedAt": "2022-07-19T08:00:00+00:00",
+      "severity": "high"
+    },
+    {
+      "advisoryId": "GHSA-p6w9-r443-r752",
+      "packageName": "monolog/monolog",
+      "affectedPackage": "monolog/monolog",
+      "title": "Code Injection in Monolog",
+      "link": "https://github.com/advisories/GHSA-p6w9-r443-r752",
+      "cve": ["CVE-2021-29392"],
+      "affectedVersions": ">=1.0.0,<1.25.4 || >=2.0.0,<2.1.1",
+      "source": "https://github.com/FriendsOfPHP/security-advisories",
+      "reportedAt": "2021-04-28T10:00:00+00:00",
+      "severity": "moderate"
+    },
+    {
+      "advisoryId": "GHSA-qqqm-vv5f-q9qh",
+      "packageName": "phpmailer/phpmailer",
+      "affectedPackage": "phpmailer/phpmailer",
+      "title": "PHPMailer Remote Code Execution",
+      "link": "https://github.com/advisories/GHSA-qqqm-vv5f-q9qh",
+      "cve": ["CVE-2020-13625"],
+      "affectedVersions": "<6.1.6",
+      "source": "https://github.com/FriendsOfPHP/security-advisories",
+      "reportedAt": "2020-06-19T11:00:00+00:00",
+      "severity": "critical"
+    }
+  ]
+}

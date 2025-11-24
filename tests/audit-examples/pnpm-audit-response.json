@@ -1,0 +1,87 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "async": {
+      "name": "async",
+      "severity": "high",
+      "via": [
+        {
+          "source": 1006,
+          "name": "async",
+          "dependency": "async",
+          "title": "Prototype Pollution in async",
+          "url": "https://github.com/advisories/GHSA-fwr7-v2mv-hh25",
+          "severity": "high",
+          "cve": ["CVE-2021-43138"],
+          "range": "<2.6.4 || >=3.0.0 <3.2.2"
+        }
+      ],
+      "effects": [],
+      "range": "<2.6.4 || >=3.0.0 <3.2.2",
+      "nodes": ["node_modules/async"],
+      "fixAvailable": true
+    },
+    "qs": {
+      "name": "qs",
+      "severity": "high",
+      "via": [
+        {
+          "source": 1469,
+          "name": "qs",
+          "dependency": "qs",
+          "title": "Prototype Pollution Protection Bypass in qs",
+          "url": "https://github.com/advisories/GHSA-hrpp-h998-j3pp",
+          "severity": "high",
+          "cve": ["CVE-2022-24999"],
+          "range": "<6.0.4 || >=6.1.0 <6.1.2 || >=6.2.0 <6.2.3 || >=6.3.0 <6.3.2 || >=6.4.0 <6.4.1 || >=6.5.0 <6.5.3"
+        }
+      ],
+      "effects": [],
+      "range": "<6.0.4 || >=6.1.0 <6.1.2 || >=6.2.0 <6.2.3 || >=6.3.0 <6.3.2 || >=6.4.0 <6.4.1 || >=6.5.0 <6.5.3",
+      "nodes": ["node_modules/qs"],
+      "fixAvailable": {
+        "name": "qs",
+        "version": "6.5.3",
+        "isSemVerMajor": false
+      }
+    },
+    "tar": {
+      "name": "tar",
+      "severity": "moderate",
+      "via": [
+        {
+          "source": 1770,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "Arbitrary File Creation/Overwrite in tar",
+          "url": "https://github.com/advisories/GHSA-5955-9wpr-37jh",
+          "severity": "moderate",
+          "cve": ["CVE-2021-32804"],
+          "range": "<4.4.18 || >=5.0.0 <5.0.8 || >=6.0.0 <6.1.7"
+        }
+      ],
+      "effects": [],
+      "range": "<4.4.18 || >=5.0.0 <5.0.8 || >=6.0.0 <6.1.7",
+      "nodes": ["node_modules/tar"],
+      "fixAvailable": true
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 1,
+      "high": 2,
+      "critical": 0,
+      "total": 3
+    },
+    "dependencies": {
+      "prod": 85,
+      "dev": 120,
+      "optional": 5,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 210
+    }
+  }
+}

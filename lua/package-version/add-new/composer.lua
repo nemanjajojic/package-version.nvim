@@ -64,9 +64,11 @@ M.run_async = function(package_config)
 
 			local docker_config = common.get_docker_config(package_config)
 			local cmd = "composer require " .. package_name .. " --no-ansi --no-interaction"
+
 			if dep_type ~= "" then
 				cmd = cmd .. " " .. dep_type
 			end
+
 			local install_command = common.prepare_composer_command(cmd, docker_config, true)
 
 			if not install_command then
