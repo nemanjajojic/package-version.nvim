@@ -37,7 +37,8 @@ Install plugin using package manager of your choice, for example with
 
 ```lua
 {
-    "nemanjajojic/package-version.nvim",
+    "nemanjajojic/package-version.nvim", 
+    version = "*", -- Use latest stable semver release or with specific constraints eg. version = "^0.6.8"
     dependencies = { "folke/which-key.nvim" }, --- this is an optional dependency
     config = function()
       require("package-version").setup()
