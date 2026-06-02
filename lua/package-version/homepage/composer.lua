@@ -45,7 +45,7 @@ M.run_async = function(package_config)
 
 		local json_str = table.concat(homepage_output, "\n")
 
-		---@type table<{homepage: string}>
+		---@type ComposerShowResult
 		local result
 
 		ok, result = pcall(vim.fn.json_decode, json_str)
@@ -55,23 +55,17 @@ M.run_async = function(package_config)
 			return
 		end
 
-		local function is_browser_friendly(url)
-			return url:match("^https?://") ~= nil
-		end
-
 		local homepage_url = nil
 
-		if result.source and result.source.url and type(result.source.url) == "string" and result.source.url ~= "" then
-			if is_browser_friendly(result.source.url) then
-				homepage_url = result.source.url
-			end
+		if result.source and type(result.source.url) == "string" then
+			homepage_url = homepage_common.normalize_repo_url(result.source.url)
 		end
 
 		if not homepage_url and result.homepage and type(result.homepage) == "string" and result.homepage ~= "" then
 			homepage_url = result.homepage
 		end
 
-		if not homepage_url then
+		if not (homepage_url and homepage_url:match("^https?://")) then
 			logger.info("Package " .. package_name .. " does not have homepage info")
 			return
 		end
