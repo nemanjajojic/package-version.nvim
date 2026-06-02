@@ -105,3 +105,13 @@
 ---@class TimeoutTimer
 ---@field stop fun()
 ---@field close fun()
+
+---@class ComposerShowSource
+---@field type? string
+---@field url? string
+---@field reference? string
+
+---@class ComposerShowResult
+---@field name? string
+---@field homepage? string
+---@field source? ComposerShowSource
