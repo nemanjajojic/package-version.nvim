@@ -77,6 +77,7 @@ You have the following commands available:
 - `:PackageVersionInstall` - install packages from lock file
 - `:PackageVersionRemove` - remove package under cursor from dependencies
 - `:PackageVersionAddNew` - add a new package (prompts for dependency type and package name)
+- `:PackageVersionBump` - bump `composer.json` constraint lower bounds to installed versions (Composer only)
 - `:PackageVersionAudit` - check if any installed packages has known vulnerabilities
 
 > [!NOTE]
@@ -94,6 +95,12 @@ You have the following commands available:
 >
 > **`PackageVersionInstall` command**
 > If installation fails, an error window displays the detailed error message.
+>
+> **`PackageVersionBump` command** (Composer only)
+>
+> - Runs `composer bump`, rewriting the lower bound of each constraint in `composer.json` to the version currently installed
+> - Requires Composer >= 2.2 (run `:checkhealth package-version` to verify)
+> - On `package.json` projects (npm, yarn, pnpm), logs an info message and exits without making changes — there is no equivalent operation in those package managers
 
 ### Cache Management
 
@@ -117,6 +124,7 @@ provided by plugin.
 - `<leader>vI` - install packages from lock file
 - `<leader>vr` - remove package under cursor
 - `<leader>va` - add a new package
+- `<leader>vb` - bump composer.json versions (Composer only)
 - `<leader>vA` - audit
 
 ### Cache Management

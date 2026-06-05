@@ -102,6 +102,17 @@ M.register_which_keys = function(config)
 			desc = "Add new package",
 		},
 		{
+			"<leader>vb",
+			function()
+				require("package-version.strategy").bump(config)
+			end,
+			icon = {
+				icon = " ",
+				color = "green",
+			},
+			desc = "Bump versions (Composer only)",
+		},
+		{
 			"<leader>vA",
 			function()
 				require("package-version.strategy").audit(config)

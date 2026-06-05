@@ -2,6 +2,64 @@ local const = require("package-version.utils.const")
 
 local M = {}
 
+local COMPOSER_BUMP_MIN = { major = 2, minor = 2 }
+
+---Probe Composer version and report whether `composer bump` is supported.
+---Severity is `warn` only (Composer < 2.2 disables bump but not the rest of
+---the plugin); never errors and never early-returns.
+---@param cmd string[] command vector; local form or docker exec form
+---@param is_docker boolean true when probing through `docker exec`
+---@param container_name? string container name (docker mode only, for messages)
+local function check_composer_bump_support(cmd, is_docker, container_name)
+	local out = vim.fn.system(cmd)
+
+	if vim.v.shell_error ~= 0 then
+		if is_docker then
+			vim.health.warn(
+				string.format(
+					"Could not query Composer in container '%s' (is it running?); "
+						.. "'Bump versions in composer.json' needs Composer >= 2.2",
+					container_name or "?"
+				)
+			)
+		else
+			vim.health.warn(
+				"Could not determine local Composer version; "
+					.. "'Bump versions in composer.json' needs Composer >= 2.2"
+			)
+		end
+		return
+	end
+
+	local major, minor = out:match("(%d+)%.(%d+)%.%d+")
+	if not major then
+		vim.health.warn("Could not parse Composer version; 'Bump versions in composer.json' needs Composer >= 2.2")
+		return
+	end
+
+	major, minor = tonumber(major), tonumber(minor)
+
+	if
+		major > COMPOSER_BUMP_MIN.major
+		or (major == COMPOSER_BUMP_MIN.major and minor >= COMPOSER_BUMP_MIN.minor)
+	then
+		vim.health.ok(string.format("Composer %d.%d supports 'composer bump'", major, minor))
+		return
+	end
+
+	local advice = is_docker and { "Use a container image with Composer >= 2.2" }
+		or { "Upgrade Composer: run 'composer self-update'" }
+
+	vim.health.warn(
+		string.format(
+			"Composer %d.%d detected; 'Bump versions in composer.json' requires >= 2.2 and will fail",
+			major,
+			minor
+		),
+		advice
+	)
+end
+
 ---@return integer count
 local function check_local_managers()
 	local count = 0
@@ -9,6 +67,7 @@ local function check_local_managers()
 	if vim.fn.executable("composer") == 1 then
 		vim.health.ok("Local Composer is found")
 		count = count + 1
+		check_composer_bump_support({ "composer", "--version", "--no-ansi" }, false)
 	else
 		vim.health.info("Composer: not found in PATH")
 	end
@@ -45,6 +104,11 @@ local function check_docker_containers(docker_config)
 	if docker_config.composer_container_name and docker_config.composer_container_name ~= "" then
 		vim.health.ok(string.format("Composer container: %s", docker_config.composer_container_name))
 		count = count + 1
+		check_composer_bump_support(
+			{ "docker", "exec", docker_config.composer_container_name, "composer", "--version", "--no-ansi" },
+			true,
+			docker_config.composer_container_name
+		)
 	else
 		vim.health.info("Composer container: not configured")
 	end

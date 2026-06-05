@@ -45,6 +45,10 @@ M.register_commands = function(config)
 		require("package-version.strategy").add_new(config)
 	end, "Add new package to project")
 
+	create_command("PackageVersionBump", function()
+		require("package-version.strategy").bump(config)
+	end, "Bump composer.json constraint lower bounds to installed versions (Composer only)")
+
 	create_command("PackageVersionClearCache", function()
 		require("package-version.cache").clear_all()
 	end, "Clear all package version cache")
