@@ -1,4 +1,4 @@
-# 📦 Package Version
+# 📦 PkgPeek
 
 [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)]((http://www.lua.org))
 [![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)]((https://neovim.io))
@@ -27,7 +27,7 @@ installed, outdated, abandoned packages, or you wanna quickly update, remove or 
 having to leave the editor in a single keystroke. Well, now you can! With this plugin,
 you can toggle package versions right inside your main package manager file.
 
-![Package version](/images/package-version.gif)
+![pkgpeek](/images/pkgpeek.gif)
 
 ## ⚙️ Installation
 
@@ -37,11 +37,11 @@ Install plugin using package manager of your choice, for example with
 
 ```lua
 {
-    "nemanjajojic/package-version.nvim", 
+    "nemanjajojic/pkgpeek.nvim", 
     version = "*", -- Use latest stable semver release or with specific constraints eg. version = "^0.6.8"
     dependencies = { "folke/which-key.nvim" }, --- this is an optional dependency
     config = function()
-      require("package-version").setup()
+      require("pkgpeek").setup()
     end
 }
 ```
@@ -52,17 +52,17 @@ You have the following commands available:
 
 ### Package Information
 
-- `:PackageVersionInstalled` - toggle installed package version
-- `:PackageVersionOutdated` - toggle outdated package version
-- `:PackageVersionHomepage` - open package homepage or repository in browser
+- `:PkgPeek installed` - toggle installed package version
+- `:PkgPeek outdated` - toggle outdated package version
+- `:PkgPeek homepage` - open package homepage or repository in browser
 
 > [!NOTE]
-> `PackageVersionHomepage` command will try to open the homepage URL for the package under cursor. If homepage is not available, it falls  back to the repository URL (if browser-friendly).
+> `:PkgPeek homepage` command will try to open the homepage URL for the package under cursor. If homepage is not available, it falls  back to the repository URL (if browser-friendly).
 
 ### Package Updates
 
-- `:PackageVersionUpdateAll` - update all outdated packages
-- `:PackageVersionUpdateSingle` - update single package under cursor
+- `:PkgPeek update-all` - update all outdated packages
+- `:PkgPeek update-single` - update single package under cursor
 
 > [!NOTE]
 > **Composer users:** When running update commands, you'll be prompted to choose an update scope:
@@ -74,38 +74,38 @@ You have the following commands available:
 
 ### Package Management
 
-- `:PackageVersionInstall` - install packages from lock file
-- `:PackageVersionRemove` - remove package under cursor from dependencies
-- `:PackageVersionAddNew` - add a new package (prompts for dependency type and package name)
-- `:PackageVersionBump` - bump `composer.json` constraint lower bounds to installed versions (Composer only)
-- `:PackageVersionAudit` - check if any installed packages has known vulnerabilities
+- `:PkgPeek install` - install packages from lock file
+- `:PkgPeek remove` - remove package under cursor from dependencies
+- `:PkgPeek add-new` - add a new package (prompts for dependency type and package name)
+- `:PkgPeek bump` - bump `composer.json` constraint lower bounds to installed versions (Composer only)
+- `:PkgPeek audit` - check if any installed packages has known vulnerabilities
 
 > [!NOTE]
-> **`PackageVersionRemove` command:**
+> **`:PkgPeek remove` command:**
 >
 > - Removes the package under cursor from your dependencies
 > - **Composer only:** Prompts to select dependency type (Production or Development) before removal
 > - **npm/yarn/pnpm:** Automatically detects and removes from the correct section (no prompt needed)
 > - If removal fails (e.g., due to dependency conflicts), an error window will display the detailed error message
 >
-> **`PackageVersionAddNew` command** uses a two-step flow:
+> **`:PkgPeek add-new` command** uses a two-step flow:
 >
 > 1. **Select dependency type** - Choose between Production or Development dependencies
 > 2. **Enter package name** - Specify which package to install
 >
-> **`PackageVersionInstall` command**
+> **`:PkgPeek install` command**
 > If installation fails, an error window displays the detailed error message.
 >
-> **`PackageVersionBump` command** (Composer only)
+> **`:PkgPeek bump` command** (Composer only)
 >
 > - Runs `composer bump`, rewriting the lower bound of each constraint in `composer.json` to the version currently installed
-> - Requires Composer >= 2.2 (run `:checkhealth package-version` to verify)
+> - Requires Composer >= 2.2 (run `:checkhealth pkgpeek` to verify)
 > - On `package.json` projects (npm, yarn, pnpm), logs an info message and exits without making changes — there is no equivalent operation in those package managers
 
 ### Cache Management
 
-- `:PackageVersionClearCache` - clear all cached package data
-- `:PackageVersionCacheStats` - show cache statistics (list of cache keys with expiration status)
+- `:PkgPeek clear-cache` - clear all cached package data
+- `:PkgPeek cache-stats` - show cache statistics (list of cache keys with expiration status)
 
 For more visual examples of commands in action, go check [COMMANDS.md](COMMANDS.md)
 
@@ -137,16 +137,16 @@ provided by plugin.
 >
 > ```lua
 > {
->    "nemanjajojic/package-version.nvim",
->    cmd = { "PackageVersionInstalled" },
+>    "nemanjajojic/pkgpeek.nvim",
+>    cmd = { "PkgPeek" },
 >    config = function()
->      require("package-version").setup()
+>      require("pkgpeek").setup()
 >    end,
 >    keys = {
 >        -- Here you can set your preferred keybinding eg.
 >        { 
 >            "<leader>key",
->            "<cmd>PackageVersionInstalled<cr>",
+>            "<cmd>PkgPeek installed<cr>",
 >            mode = "n", 
 >            desc = "Toggle installed package version" 
 >        },
@@ -165,7 +165,7 @@ you can customize it to your liking.
 
 ```lua
 config = function()
-    require("package-version").setup({
+    require("pkgpeek").setup({
         color = {
             latest = "",
             wanted = "",
@@ -262,7 +262,7 @@ stopped and an error message will be shown
 **Example:**
 
 ```lua
-require("package-version").setup({
+require("pkgpeek").setup({
     timeout = 60,
 })
 ```
@@ -282,7 +282,7 @@ reduce unnecessary package manager calls.
 **Example:**
 
 ```lua
-require("package-version").setup({
+require("pkgpeek").setup({
     cache = {
         enabled = true,  -- Enable/disable caching system
         ttl = {
@@ -330,7 +330,7 @@ aggressive and may not be needed for all workflows.
 **Example**
 
 ```lua
-require("package-version").setup({
+require("pkgpeek").setup({
     cache = {
         warmup = {
             debounce_ms = 500,  -- Wait time before triggering warmup (default: 500)
@@ -380,7 +380,7 @@ In case you wanna use local installation of package manager,
 
 ## 🩺 Health Check
 
-Run `:checkhealth package-version` command to check if plugin is properly
+Run `:checkhealth pkgpeek` command to check if plugin is properly
 configured and have everything need to work properly.
 
 The health check validates:

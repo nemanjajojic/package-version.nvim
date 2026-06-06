@@ -1,0 +1,127 @@
+local M = {}
+
+local logger = require("pkgpeek.utils.logger")
+local spinner = require("pkgpeek.utils.spinner")
+local common = require("pkgpeek.utils.common")
+local mutex = require("pkgpeek.utils.mutex")
+local cache = require("pkgpeek.cache")
+local window = require("pkgpeek.utils.window")
+local npm_json = require("pkgpeek.utils.parser.npm-json")
+
+---@param package_config PkgPeekValidatedConfig
+M.run_async = function(package_config)
+	if not mutex.try_lock("NPM Update Single") then
+		return
+	end
+
+	local current_line = vim.api.nvim_get_current_line()
+	local package_name = common.get_package_name_from_line_json(current_line)
+
+	if not package_name then
+		logger.warning(
+			"Could not determine package name from the current line. Make sure the cursor is on a valid package line."
+		)
+
+		return
+	end
+
+	logger.info("Updating package: " .. package_name)
+
+	local stdout_lines = {}
+	local stderr_lines = {}
+
+	local timeout_timer
+
+	local on_exit = function(job_id, code, event)
+		local ok, err = pcall(function()
+			timeout_timer:stop()
+			timeout_timer:close()
+		end)
+
+		if not ok then
+			logger.error("Failed to cleanup timeout timer: " .. tostring(err))
+		end
+
+		spinner.hide()
+
+		-- Parse JSON output
+		local parsed = npm_json.parse_json(stdout_lines)
+
+		-- Check for errors
+		if code ~= 0 or not parsed.success then
+			logger.error("Command npm update " .. package_name .. " failed with code: " .. code)
+			mutex.unlock()
+			
+			-- If we have parsed error, use formatted output; otherwise use stderr
+			local error_lines
+			if not parsed.success then
+				error_lines = npm_json.format_output(parsed, "npm update " .. package_name)
+			else
+				error_lines = stderr_lines
+			end
+			
+			window.display_error(error_lines, "npm update " .. package_name)
+			return
+		end
+
+		cache.invalidate_package_manager(cache.PACKAGE_MANAGER.NPM)
+
+		local success_lines = npm_json.format_output(parsed, "npm update " .. package_name)
+		window.display_success(success_lines, "npm update " .. package_name)
+
+		mutex.unlock()
+	end
+
+	local docker_config = common.get_docker_config(package_config)
+	local update_one_command =
+		common.prepare_npm_command("npm update " .. package_name .. " --no-fund --no-audit --json", docker_config)
+
+	if not update_one_command then
+		return
+	end
+
+	spinner.show(package_config.spinner)
+
+	local job_id = vim.fn.jobstart(update_one_command, {
+		stdout_buffered = true,
+		stderr_buffered = true,
+		on_stdout = function(_, data)
+			if data then
+				for _, line in ipairs(data) do
+					if line ~= "" then
+						table.insert(stdout_lines, line)
+					end
+				end
+			end
+		end,
+		on_stderr = function(_, data)
+			if data then
+				for _, line in ipairs(data) do
+					if line ~= "" then
+						table.insert(stderr_lines, line)
+					end
+				end
+			end
+		end,
+		on_exit = on_exit,
+	})
+
+	if job_id <= 0 then
+		mutex.unlock()
+
+		spinner.hide()
+
+		logger.error("Failed to start job")
+
+		return
+	end
+
+	local timeout_seconds = common.get_timeout(package_config)
+	timeout_timer = common.start_job_timeout(job_id, timeout_seconds, "NPM update single command", function()
+		mutex.unlock()
+
+		spinner.hide()
+	end)
+end
+
+return M
