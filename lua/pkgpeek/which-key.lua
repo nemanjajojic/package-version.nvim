@@ -6,7 +6,7 @@ M.register_which_keys = function(config)
 
 	which_key.add({
 		{
-			"<leader>v",
+			"<leader>p",
 			group = "pkgpeek",
 			icon = {
 				icon = "󰏖 ",
@@ -14,7 +14,7 @@ M.register_which_keys = function(config)
 			},
 		},
 		{
-			"<leader>vi",
+			"<leader>pi",
 			function()
 				require("pkgpeek.strategy").installed(config)
 			end,
@@ -25,7 +25,7 @@ M.register_which_keys = function(config)
 			desc = "Toggle installed package versions",
 		},
 		{
-			"<leader>vI",
+			"<leader>pI",
 			function()
 				require("pkgpeek.strategy").install(config)
 			end,
@@ -36,7 +36,7 @@ M.register_which_keys = function(config)
 			desc = "Install packages from lock file",
 		},
 		{
-			"<leader>vo",
+			"<leader>po",
 			function()
 				require("pkgpeek.strategy").outdated(config)
 			end,
@@ -47,7 +47,7 @@ M.register_which_keys = function(config)
 			desc = "Toggle outdated package versions",
 		},
 		{
-			"<leader>vh",
+			"<leader>ph",
 			function()
 				require("pkgpeek.strategy").homepage(config)
 			end,
@@ -58,7 +58,7 @@ M.register_which_keys = function(config)
 			desc = "Open package homepage/repository in browser",
 		},
 		{
-			"<leader>vu",
+			"<leader>pu",
 			function()
 				require("pkgpeek.strategy").update_all(config)
 			end,
@@ -69,7 +69,7 @@ M.register_which_keys = function(config)
 			desc = "Update all packages",
 		},
 		{
-			"<leader>vs",
+			"<leader>ps",
 			function()
 				require("pkgpeek.strategy").update_single(config)
 			end,
@@ -80,7 +80,7 @@ M.register_which_keys = function(config)
 			desc = "Update package under cursor",
 		},
 		{
-			"<leader>vr",
+			"<leader>pr",
 			function()
 				require("pkgpeek.strategy").remove(config)
 			end,
@@ -91,7 +91,7 @@ M.register_which_keys = function(config)
 			desc = "Remove package under cursor",
 		},
 		{
-			"<leader>va",
+			"<leader>pa",
 			function()
 				require("pkgpeek.strategy").add_new(config)
 			end,
@@ -102,7 +102,7 @@ M.register_which_keys = function(config)
 			desc = "Add new package",
 		},
 		{
-			"<leader>vb",
+			"<leader>pb",
 			function()
 				require("pkgpeek.strategy").bump(config)
 			end,
@@ -113,7 +113,7 @@ M.register_which_keys = function(config)
 			desc = "Bump versions (Composer only)",
 		},
 		{
-			"<leader>vA",
+			"<leader>pA",
 			function()
 				require("pkgpeek.strategy").audit(config)
 			end,
@@ -124,7 +124,7 @@ M.register_which_keys = function(config)
 			desc = "Audit package vulnerabilities",
 		},
 		{
-			"<leader>vc",
+			"<leader>pc",
 			group = "Cache",
 			icon = {
 				icon = " ",
@@ -132,7 +132,7 @@ M.register_which_keys = function(config)
 			},
 		},
 		{
-			"<leader>vcc",
+			"<leader>pcc",
 			function()
 				require("pkgpeek.cache").clear_all()
 			end,
@@ -143,7 +143,7 @@ M.register_which_keys = function(config)
 			desc = "Clear plugin cache",
 		},
 		{
-			"<leader>vcs",
+			"<leader>pcs",
 			function()
 				require("pkgpeek.cache").stats()
 			end,
