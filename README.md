@@ -116,21 +116,21 @@ provided by plugin.
 
 ### Package Operations
 
-- `<leader>vi` - toggle installed package version
-- `<leader>vo` - toggle outdated package version
-- `<leader>vh` - open package homepage/repository in browser
-- `<leader>vu` - update all outdated packages according to semver range
-- `<leader>vs` - update single package according to semver range
-- `<leader>vI` - install packages from lock file
-- `<leader>vr` - remove package under cursor
-- `<leader>va` - add a new package
-- `<leader>vb` - bump composer.json versions (Composer only)
-- `<leader>vA` - audit
+- `<leader>pi` - toggle installed package version
+- `<leader>po` - toggle outdated package version
+- `<leader>ph` - open package homepage/repository in browser
+- `<leader>pu` - update all outdated packages according to semver range
+- `<leader>ps` - update single package according to semver range
+- `<leader>pI` - install packages from lock file
+- `<leader>pr` - remove package under cursor
+- `<leader>pa` - add a new package
+- `<leader>pb` - bump composer.json versions (Composer only)
+- `<leader>pA` - audit
 
 ### Cache Management
 
-- `<leader>vcc` - clear all cached package data
-- `<leader>vcs` - show cache statistics
+- `<leader>pcc` - clear all cached package data
+- `<leader>pcs` - show cache statistics
 
 > [!IMPORTANT]
 > If you are not using `which-key`, you can set keybindings to your preference eg.
